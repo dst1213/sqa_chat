@@ -232,7 +232,8 @@ def sqa_handler():
     import json
 
     from langchain import OpenAI, SQLDatabase, SQLDatabaseChain
-    db = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
+    # db = SQLDatabase.from_uri("sqlite:///med_db/doctor_0612.db", include_tables=['clinical_trial', 'faq'])
+    db = SQLDatabase.from_uri("sqlite:///med_db/doctor_0612.db")
     llm = OpenAI(temperature=0, verbose=True)
     from langchain.prompts.prompt import PromptTemplate
 

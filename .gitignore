@@ -1,2 +1,3 @@
+.env
 data/
-db/
+med_db/
