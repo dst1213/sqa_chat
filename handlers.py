@@ -14,9 +14,11 @@ load_dotenv()
 # db = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
 db_all = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq','doctors'])
 db_faq = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['faq'])
-db_ct = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
+# db_ct = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
 db_ct_demo = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial_demo', 'faq'])
-db_doctor = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['doctors','faq'])
+# db_doctor = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['doctors','faq'])
+db_doctor = SQLDatabase.from_uri("sqlite:///med_db/doctor.db", include_tables=['doctors'])
+db_ct = SQLDatabase.from_uri("sqlite:///med_db/clinictrials.db", include_tables=['doctor'])
 
 llm = OpenAI(temperature=0, verbose=True)
 
@@ -94,7 +96,9 @@ def get_data(query=None):
     # 处理响应结果
 
 def clean_table_name(table_name):
-    _table_name = table_name
+    _table_name = 'faq' # table_name
+    if table_name is None:
+        return _table_name
     for t in all_tables:
         if t in table_name:
             _table_name = t
