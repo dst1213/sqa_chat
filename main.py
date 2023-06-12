@@ -239,7 +239,7 @@ def sqa_handler():
     logging.info(f"user:{user}, query:{query}")
     print(f"user:{user}, domain:{domain}, query:{query}")
     try:
-        db_chain = get_table(table=domain)
+        db_chain = get_table(table=domain,query=query)
         res = db_chain.run(query)
     except Exception as e:
         traceback.print_exc()
