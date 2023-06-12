@@ -4,13 +4,14 @@ import json
 import logging
 import os
 import tempfile
+import traceback
 
 from bs4 import BeautifulSoup
 import requests
 from flask import Flask, request, Response, render_template, stream_with_context, jsonify
 import websockets
 
-from handlers import db_chain
+from handlers import get_table
 
 from dotenv import load_dotenv
 
@@ -233,12 +234,15 @@ def text_handler():
 @app.route('/sqa', methods=['POST'])
 def sqa_handler():
     user = request.form.get("user", "")
+    domain = request.form.get("domain", "faq")
     query = request.form.get("query", "")
     logging.info(f"user:{user}, query:{query}")
-    print(f"user:{user}, query:{query}")
+    print(f"user:{user}, domain:{domain}, query:{query}")
     try:
+        db_chain = get_table(table=domain)
         res = db_chain.run(query)
     except Exception as e:
+        traceback.print_exc()
         res = {'error':str(e)}
     return {'data': res}
 
