@@ -1,6 +1,17 @@
 # ----------------------------------------------------------------------------------
 import asyncio
+import json
+import logging
+import os
+import tempfile
 
+from bs4 import BeautifulSoup
+import requests
+from flask import Flask, request, Response, render_template, stream_with_context, jsonify
+import websockets
+
+def echo():
+    pass
 
 # websocket
 async def main():
@@ -253,7 +264,7 @@ if __name__ == "__main__":
     deploy_mode = "sse"  # gr, hf, sse，ws，分别是gradio原版，huggingface部署模式，sse生产部署模式，websocket（当前只能非流式）
 
     if deploy_mode == "sse":
-        app.run(debug=True, host="0.0.0.0", port=5143)
+        app.run(debug=True, host="0.0.0.0", port=5000)
 
     elif deploy_mode == "ws":
         asyncio.run(main())

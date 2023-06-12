@@ -16,3 +16,4 @@ openpyxl
 python-dotenv
 bs4
 flask
+websockets

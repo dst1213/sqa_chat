@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CooGen Chatbot Dev</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!--suppress JSUnresolvedLibraryURL -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-5"></div>
+        <div class="col-12">
+            <div><h2>昕康问答</h2>
+            用户：
+                <input type="text" id="userid" style="width: 100px;height: 30px">
+            </div>
+            <br>
+            <div class="textfield">
+                <div class="textfield-body" id="mytext" style="width: 900px;height: 300px;overflow-y:auto;border: solid lightblue"></div>
+            </div>
+            <br>
+
+            <div>
+                <input type="text" id="myinput" style="width: 900px;height: 60px">
+                <br>
+                <br>
+                <button id="btn1" type="button" class="btn btn-primary">询问</button>
+                <button id="btn2" type="button" class="btn btn-primary">停止</button>
+                <button id="btn3" type="button" class="btn btn-primary">清空</button>
+                <br>
+                <br>
+                <div>
+                <button id="btn4" type="button" class="btn btn-primary">文档解析</button>
+                <input type="file" multiple id="upload">
+                </div>
+                <br>
+                <div>
+                <button id="btn5" type="button" class="btn btn-primary">网页解析</button>
+                <input type="text" id="urlinput" placeholder="URL解析" style="width: 400px;height: 30px">
+                </div>
+                <br>
+                <div>
+                <button id="btn6" type="button" class="btn btn-primary">文本解析</button>
+                <input type="text" id="textinput" placeholder="文本解析" style="width: 400px;height: 80px">
+                </div>
+            </div>
+        </div>
+        <div class="col-5"></div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var user_url;
+        var user_text;
+        var user = document.getElementById("userid")?.value || "";
+        console.log("user.:"+user);
+        var dom2 = document.getElementById('mytext');
+        var myinput = document.getElementById('myinput');
+        console.log('myinput:' + myinput.innerText);
+        var option;  // 图表参数
+
+        option = {
+            title: {
+                text: '你好！我是CooGen。',
+            }
+        }
+
+        // 初始化图表
+        if (option && typeof option === 'object') {
+            // 设置为true的话，就是notMerge，不合并,false的话，就Merge，之前的东西还保留~
+            dom2.innerText = option.title.text;
+        }
+
+        // SSE接收
+        var source = null;
+        $("#btn1").click(function () {
+            // source = new EventSource("/chatbot_data");
+
+            query_str = document.getElementById('myinput').value;
+            user = document.getElementById('userid').value;
+            console.log("user q:"+user);
+            source = new EventSource("/query?user="+ user +"&content=" + query_str);
+            // readyState一个 unsigned short 值，代表连接状态。可能值是 CONNECTING (0), OPEN (1), 或者 CLOSED (2)。
+            console.log('EventSource.readyState ' + source.readyState);
+
+            // sse 连接开启时回调函数
+            source.onopen = function (event) {
+                console.log("onopen");
+                console.log('EventSource.readyState ' + source.readyState);
+            }
+            // 消息监听，event 是后端返回的数据,相当于python字典
+            source.onmessage = function (event) {
+                update_data(event);
+            }
+            // 监听 error 事件，后端超时没有传输数据时触发
+            source.onerror = function (event) {
+                console.log("error happened");
+                source.close();
+                console.log('EventSource.readyState ' + source.readyState);
+            }
+        })
+
+        // 绑定停止按钮事件
+        $("#btn2").click(function () {
+            if (source !== null) {
+                source.close();
+                // delete_data();
+            }
+        })
+
+        // 绑定清空按钮事件
+        $("#btn3").click(function () {
+            if (source !== null) {
+                source.close();
+                delete_data();
+            }
+        })
+
+
+        // 绑定上传按钮事件
+        $("#btn4").click(function () {
+            user = document.getElementById('userid').value;
+            var files = $("#upload").get(0).files;
+            var formData = new FormData();
+            for(var i=0; i<files.length; i++){
+                formData.append("files", files[i]);
+            }
+            formData.append("user",user);
+            console.log("user:" + user);
+            $.ajax({
+                url: "/upload",
+                data: formData,
+                type: "post",
+                dataType: "json",
+                cache: false,//上传文件无需缓存
+                processData: false,//用于对data参数进行序列化处理 这里必须false
+                contentType: false, //必须
+                success: function (result) {
+                    alert("上传完成!");
+                },
+            })
+        })
+
+        // 绑定URL解析按钮事件
+        $("#btn5").click(function () {
+            user = document.getElementById('userid').value;
+            user_url = document.getElementById('urlinput').value;
+            console.log('user:'+user +', url:'+user_url);
+            var formData = new FormData();
+            formData.append("user",user);
+            formData.append("url",user_url);
+            $.ajax({
+                url: "/crawl",
+                data: formData,
+                type: "post",
+                dataType: "json",
+                cache: false,//上传文件无需缓存
+                processData: false,//用于对data参数进行序列化处理 这里必须false
+                contentType: false, //必须
+                success: function (result) {
+                    alert("解析完成!");
+                },
+            })
+
+        })
+
+        // 绑定文本解析按钮事件
+        $("#btn6").click(function () {
+            user = document.getElementById('userid').value;
+            user_text = document.getElementById('textinput').value;
+            console.log('user:'+user +', url:'+user_text);
+            var formData = new FormData();
+            formData.append("user",user);
+            formData.append("text",user_text);
+            $.ajax({
+                url: "/text",
+                data: formData,
+                type: "post",
+                dataType: "json",
+                cache: false,//上传文件无需缓存
+                processData: false,//用于对data参数进行序列化处理 这里必须false
+                contentType: false, //必须
+                success: function (result) {
+                    alert("解析完成!");
+                },
+            })
+
+        })
+        // 更新图表数据
+        function update_data(event) {
+            const data = JSON.parse(event.data);
+            console.log(data)
+            option.title.text = data.value;
+            dom2.innerText = data.value;
+        }
+
+        // 删除图表数据
+        function delete_data() {
+            dom2.innerText = "";
+        }
+    });
+
+</script>
+</body>
+
+</html>
