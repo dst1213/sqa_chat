@@ -10,6 +10,12 @@ import requests
 from flask import Flask, request, Response, render_template, stream_with_context, jsonify
 import websockets
 
+from handlers import db_chain
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def echo():
     pass
 
@@ -228,36 +234,12 @@ def text_handler():
 def sqa_handler():
     user = request.form.get("user", "")
     query = request.form.get("query", "")
-
-    import json
-
-    from langchain import OpenAI, SQLDatabase, SQLDatabaseChain
-    # db = SQLDatabase.from_uri("sqlite:///med_db/doctor_0612.db", include_tables=['clinical_trial', 'faq'])
-    db = SQLDatabase.from_uri("sqlite:///med_db/doctor_0612.db")
-    llm = OpenAI(temperature=0, verbose=True)
-    from langchain.prompts.prompt import PromptTemplate
-
-    _DEFAULT_TEMPLATE = """Given an input question, first translate to English,
-    then create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
-    Use the following format:
-
-    Question: "Question here"
-    SQLQuery: "SQL Query to run"
-    SQLResult: "Result of the SQLQuery"
-    Answer: "Final answer here", reply in Chinese language.
-
-    Only use the following tables:
-
-    {table_info}
-
-    If someone asks for the table foobar, they really mean the employee table.
-
-    Question: {input}"""
-    PROMPT = PromptTemplate(
-        input_variables=["input", "table_info", "dialect"], template=_DEFAULT_TEMPLATE
-    )
-    db_chain = SQLDatabaseChain.from_llm(llm, db, prompt=PROMPT, verbose=True)
-    res = db_chain.run(query)
+    logging.info(f"user:{user}, query:{query}")
+    print(f"user:{user}, query:{query}")
+    try:
+        res = db_chain.run(query)
+    except Exception as e:
+        res = {'error':str(e)}
     return {'data': res}
 
 
