@@ -17,8 +17,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def echo():
     pass
+
 
 # websocket
 async def main():
@@ -239,11 +241,11 @@ def sqa_handler():
     logging.info(f"user:{user}, query:{query}")
     print(f"user:{user}, domain:{domain}, query:{query}")
     try:
-        db_chain = get_table(table=domain,query=query)
+        db_chain = get_table(table=domain, query=query)
         res = db_chain.run(query)
     except Exception as e:
         traceback.print_exc()
-        res = {'error':str(e)}
+        res = {'error': str(e)}
     return {'data': res}
 
 

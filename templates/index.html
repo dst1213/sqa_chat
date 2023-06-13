@@ -14,12 +14,13 @@
         <div class="col-5"></div>
         <div class="col-12">
             <div><h2>昕康问答</h2>
-            用户：
+                用户：
                 <input type="text" id="userid" style="width: 100px;height: 30px">
             </div>
             <br>
             <div class="textfield">
-                <div class="textfield-body" id="mytext" style="width: 900px;height: 300px;overflow-y:auto;border: solid lightblue"></div>
+                <div class="textfield-body" id="mytext"
+                     style="width: 900px;height: 300px;overflow-y:auto;border: solid lightblue"></div>
             </div>
             <br>
 
@@ -33,18 +34,18 @@
                 <br>
                 <br>
                 <div>
-                <button id="btn4" type="button" class="btn btn-primary">文档解析</button>
-                <input type="file" multiple id="upload">
+                    <button id="btn4" type="button" class="btn btn-primary">文档解析</button>
+                    <input type="file" multiple id="upload">
                 </div>
                 <br>
                 <div>
-                <button id="btn5" type="button" class="btn btn-primary">网页解析</button>
-                <input type="text" id="urlinput" placeholder="URL解析" style="width: 400px;height: 30px">
+                    <button id="btn5" type="button" class="btn btn-primary">网页解析</button>
+                    <input type="text" id="urlinput" placeholder="URL解析" style="width: 400px;height: 30px">
                 </div>
                 <br>
                 <div>
-                <button id="btn6" type="button" class="btn btn-primary">文本解析</button>
-                <input type="text" id="textinput" placeholder="文本解析" style="width: 400px;height: 80px">
+                    <button id="btn6" type="button" class="btn btn-primary">文本解析</button>
+                    <input type="text" id="textinput" placeholder="文本解析" style="width: 400px;height: 80px">
                 </div>
             </div>
         </div>
@@ -56,7 +57,7 @@
         var user_url;
         var user_text;
         var user = document.getElementById("userid")?.value || "";
-        console.log("user.:"+user);
+        console.log("user.:" + user);
         var dom2 = document.getElementById('mytext');
         var myinput = document.getElementById('myinput');
         console.log('myinput:' + myinput.innerText);
@@ -81,8 +82,8 @@
 
             query_str = document.getElementById('myinput').value;
             user = document.getElementById('userid').value;
-            console.log("user q:"+user);
-            source = new EventSource("/query?user="+ user +"&content=" + query_str);
+            console.log("user q:" + user);
+            source = new EventSource("/query?user=" + user + "&content=" + query_str);
             // readyState一个 unsigned short 值，代表连接状态。可能值是 CONNECTING (0), OPEN (1), 或者 CLOSED (2)。
             console.log('EventSource.readyState ' + source.readyState);
 
@@ -125,10 +126,10 @@
             user = document.getElementById('userid').value;
             var files = $("#upload").get(0).files;
             var formData = new FormData();
-            for(var i=0; i<files.length; i++){
+            for (var i = 0; i < files.length; i++) {
                 formData.append("files", files[i]);
             }
-            formData.append("user",user);
+            formData.append("user", user);
             console.log("user:" + user);
             $.ajax({
                 url: "/upload",
@@ -148,10 +149,10 @@
         $("#btn5").click(function () {
             user = document.getElementById('userid').value;
             user_url = document.getElementById('urlinput').value;
-            console.log('user:'+user +', url:'+user_url);
+            console.log('user:' + user + ', url:' + user_url);
             var formData = new FormData();
-            formData.append("user",user);
-            formData.append("url",user_url);
+            formData.append("user", user);
+            formData.append("url", user_url);
             $.ajax({
                 url: "/crawl",
                 data: formData,
@@ -171,10 +172,10 @@
         $("#btn6").click(function () {
             user = document.getElementById('userid').value;
             user_text = document.getElementById('textinput').value;
-            console.log('user:'+user +', url:'+user_text);
+            console.log('user:' + user + ', url:' + user_text);
             var formData = new FormData();
-            formData.append("user",user);
-            formData.append("text",user_text);
+            formData.append("user", user);
+            formData.append("text", user_text);
             $.ajax({
                 url: "/text",
                 data: formData,
@@ -189,6 +190,7 @@
             })
 
         })
+
         // 更新图表数据
         function update_data(event) {
             const data = JSON.parse(event.data);

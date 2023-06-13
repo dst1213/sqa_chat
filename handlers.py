@@ -9,10 +9,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 # db = SQLDatabase.from_uri("sqlite:///med_db/doctor_0612.db", include_tables=['doctor'])
 # db = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
-db_all = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq','doctors'])
+db_all = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq', 'doctors'])
 db_faq = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['faq'])
 # db_ct = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
 db_ct_demo = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial_demo', 'faq'])
@@ -21,8 +20,6 @@ db_doctor = SQLDatabase.from_uri("sqlite:///med_db/doctor.db", include_tables=['
 db_ct = SQLDatabase.from_uri("sqlite:///med_db/clinictrials.db", include_tables=['doctor'])  # 2023.06.12 clinical_trial
 
 llm = OpenAI(temperature=0, verbose=True)
-
-
 
 _DEFAULT_TEMPLATE = """Given an input question, first translate to English,
 then create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
@@ -46,9 +43,10 @@ PROMPT = PromptTemplate(
     input_variables=["input", "table_info", "dialect"], template=_DEFAULT_TEMPLATE
 )
 
-tables = {'all':db_all,'ct':db_ct,'doctor':db_doctor,'ct_demo':db_ct_demo}
-tables2 = {'all':db_all,'clinical_trial':db_ct,'doctor':db_doctor,'ct_demo':db_ct_demo,'faq':db_faq}
-all_tables = ['faq','doctor','clinical_trial']
+tables = {'all': db_all, 'ct': db_ct, 'doctor': db_doctor, 'ct_demo': db_ct_demo}
+tables2 = {'all': db_all, 'clinical_trial': db_ct, 'doctor': db_doctor, 'ct_demo': db_ct_demo, 'faq': db_faq}
+all_tables = ['faq', 'doctor', 'clinical_trial']
+
 
 def get_data(query=None):
     content = None
@@ -95,8 +93,9 @@ def get_data(query=None):
     return content
     # 处理响应结果
 
+
 def clean_table_name(table_name):
-    _table_name = 'faq' # table_name
+    _table_name = 'faq'  # table_name
     if table_name is None:
         return _table_name
     for t in all_tables:
@@ -105,7 +104,8 @@ def clean_table_name(table_name):
             break
     return _table_name
 
-def get_table(table='ct',query=None):
+
+def get_table(table='ct', query=None):
     if table == 'auto':
         table_name = get_data(query)
         table_name = clean_table_name(table_name)
@@ -114,4 +114,3 @@ def get_table(table='ct',query=None):
         db = tables[table]
     db_chain = SQLDatabaseChain.from_llm(llm, db, prompt=PROMPT, verbose=True, top_k=3)
     return db_chain
-
