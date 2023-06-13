@@ -1,0 +1,4 @@
+
+Truncate SQLResult to less than 4000 tokens or length < 4000
+
+Do not use Select * from

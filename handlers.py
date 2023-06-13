@@ -19,7 +19,7 @@ db_faq = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['faq']
 db_ct_demo = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial_demo', 'faq'])
 # db_doctor = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['doctors','faq'])
 db_doctor = SQLDatabase.from_uri("sqlite:///med_db/doctor.db", include_tables=['doctors'])  # 2023.06.12 doctor
-db_ct = SQLDatabase.from_uri("sqlite:///med_db/clinictrials.db", include_tables=['doctor'])  # 2023.06.12 clinical_trial
+db_ct = SQLDatabase.from_uri("sqlite:///med_db/clinicaltrials.db", include_tables=['doctor'])  # 2023.06.12 clinical_trial
 db_pb = SQLDatabase.from_uri("sqlite:///med_db/pubmed2.db", include_tables=['pubmed'])  # 2023.06.12 clinical_trial
 
 llm = OpenAI(temperature=0, verbose=True)
@@ -43,10 +43,16 @@ def clean_table_name(table_name):
 
 def get_table(table='ct', query=None):
     if table == 'auto':
-        table_name = get_data(query)
+        prompt = prompt_templates.INTENT_TO_TABLE_PROMPTS
+        table_name = get_data(query, prompt=prompt)
         table_name = clean_table_name(table_name)
         db = tables2[table_name] if table_name in all_tables else tables2['faq']
     else:
         db = tables[table]
     db_chain = SQLDatabaseChain.from_llm(llm, db, prompt=prompt_templates.SQL_PROMPT, verbose=True, top_k=3)
     return db_chain
+
+
+def get_sim_query(query, prompt):
+    prompt = prompt_templates.SIMILAR_QUESTION_TEMPLATE
+    sim_queris = get_data(query, prompt=prompt)

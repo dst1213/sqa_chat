@@ -8,13 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_data(query=None):
+def get_data(query=None, prompt=None):
     content = None
     url = 'https://gpt-api.putaojie.top/v1/chat/completions'
     headers = {'Authorization': 'Bearer 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',
                'Content-Type': 'application/json'}
-    my_prompt = prompt_templates.INTENT_TO_TABLE_PROMPTS
-    real_query = my_prompt.replace("{query_str}", query)
+
+    real_query = prompt.replace("{query_str}", query)
     data = {
         "model": "gpt-3.5-turbo",
         "messages": [{"role": "user", "content": real_query}]

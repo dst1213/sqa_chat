@@ -41,3 +41,11 @@ SQL_LLM_TEMPLATE = """Given an input question, first translate to English,
 SQL_PROMPT = PromptTemplate(
     input_variables=["input", "table_info", "dialect"], template=SQL_LLM_TEMPLATE
 )
+
+SIMILAR_QUESTION_TEMPLATE = """
+假如你是自然语言处理工程师，
+扩写以下问句（question）的相似问句，根据问句意图，可以使用如增加辅助词、同义词替换、口语化、表述形式变换等技巧来实现，
+扩写10个，按JSONL格式回答：{"query":xxx}，Return only the JSON data and nothing else。
+
+Question:{query_str}
+"""
