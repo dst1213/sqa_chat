@@ -15,6 +15,8 @@ load_dotenv()
 # db = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
 db_all = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq', 'doctors'])
 db_faq = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['faq'])
+db_faq_new = SQLDatabase.from_uri("sqlite:///med_db/faq_chinese_new.db", include_tables=['faq_chinese_new'])
+
 # db_ct = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
 db_ct_demo = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial_demo', 'faq'])
 # db_doctor = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['doctors','faq'])
@@ -24,8 +26,8 @@ db_pb = SQLDatabase.from_uri("sqlite:///med_db/pubmed2.db", include_tables=['pub
 
 llm = OpenAI(temperature=0, verbose=True)
 
-tables = {'all': db_all, 'ct': db_ct, 'doctor': db_doctor, 'ct_demo': db_ct_demo, 'pb': db_pb}
-tables2 = {'all': db_all, 'clinical_trial': db_ct, 'doctor': db_doctor, 'ct_demo': db_ct_demo, 'faq': db_faq,
+tables = {'all': db_all, 'ct': db_ct, 'doctor': db_doctor, 'ct_demo': db_ct_demo, 'pb': db_pb, 'faq':db_faq_new}
+tables2 = {'all': db_all, 'clinical_trial': db_ct, 'doctor': db_doctor, 'ct_demo': db_ct_demo, 'faq': db_faq_new,
            'pubmed': db_pb}
 all_tables = ['faq', 'doctor', 'clinical_trial']
 
