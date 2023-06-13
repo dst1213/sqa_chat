@@ -3,6 +3,7 @@ import traceback
 
 import requests
 import prompt_templates
+from log_tool import slogger
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,20 +22,20 @@ def get_data(query=None, prompt=None):
     }
     try:
         response = requests.post(url, data=json.dumps(data), headers=headers)
-        print(response)
-        print(f"query:{query}")
-        print(f"real_query:{real_query}")
+        slogger.info(response)
+        slogger.info(f"query:{query}")
+        slogger.info(f"real_query:{real_query}")
 
         if response.status_code == 200:
             json_dict = response.json()  # 解析JSON
-            print(f"json_dict:{json_dict}")
+            slogger.info(f"json_dict:{json_dict}")
             # 从JSON字符串中提取内容字段
             content = json_dict['choices'][0]['message']['content']  # 获取指定字段
-            print(content)
+            slogger.info(content)
         else:
-            print("请求失败")
+            slogger.info("请求失败")
     except Exception as e:
         traceback.print_exc()
-        print(f"error:{e}")
+        slogger.info(f"error:{e}")
     return content
     # 处理响应结果

@@ -1,4 +1,5 @@
 import json
+import logging
 import traceback
 
 import requests
@@ -7,6 +8,7 @@ from langchain.prompts.prompt import PromptTemplate
 
 import prompt_templates
 from common import *
+from log_tool import slogger
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,7 +45,7 @@ def clean_table_name(table_name):
     return _table_name
 
 
-def get_table(table='ct', query=None):
+def get_table(table='ct', query=None, lang='Chinese'):
     if table == 'auto':
         prompt = prompt_templates.INTENT_TO_TABLE_PROMPTS
         table_name = get_data(query, prompt=prompt)
@@ -51,7 +53,9 @@ def get_table(table='ct', query=None):
         db = tables2[table_name] if table_name in all_tables else tables2['faq']
     else:
         db = tables[table]
-    db_chain = SQLDatabaseChain.from_llm(llm, db, prompt=prompt_templates.SQL_PROMPT, verbose=True, top_k=3)
+    sql_prompt = prompt_templates.get_sql_lang_prompt(lang)
+    slogger.info(f"sql_prompt:{sql_prompt}")
+    db_chain = SQLDatabaseChain.from_llm(llm, db, prompt=sql_prompt, verbose=True, top_k=3)
     return db_chain
 
 

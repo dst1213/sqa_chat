@@ -38,9 +38,35 @@ SQL_LLM_TEMPLATE = """Given an input question, first translate to English,
     
     Question: {input}"""
 
+SQL_LANG_TEMPLATE = """Given an input question, first translate to English,
+    then create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
+    Use the following format:
+
+    Question: "Question here"
+    SQLQuery: "SQL Query to run"
+    SQLResult: "Result of the SQLQuery"
+    Answer: "Final answer here", reply in __lang_str__ language.
+
+    Only use the following tables:
+
+    {table_info}
+
+    Truncate SQLResult to less than 4000 tokens or length < 4000
+
+    Do not use Select * from
+
+    Question: {input}"""
+
 SQL_PROMPT = PromptTemplate(
     input_variables=["input", "table_info", "dialect"], template=SQL_LLM_TEMPLATE
 )
+
+def get_sql_lang_prompt(lang='Chinese'):
+    sql_templ = SQL_LANG_TEMPLATE.replace("__lang_str__",lang)
+    SQL_LANG_PROMPT = PromptTemplate(
+        input_variables=["input", "table_info", "dialect"], template=sql_templ
+    )
+    return SQL_LANG_PROMPT
 
 SIMILAR_QUESTION_TEMPLATE = """
 假如你是自然语言处理工程师，

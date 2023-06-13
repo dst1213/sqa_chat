@@ -12,6 +12,7 @@ from flask import Flask, request, Response, render_template, stream_with_context
 import websockets
 
 from handlers import get_table
+from log_tool import slogger
 
 from dotenv import load_dotenv
 
@@ -61,9 +62,9 @@ def upload():
     # postman：POST -> Body -> form-data -> KEY=files
     uploaded_files = request.files.getlist("files")
     user_id = request.form.get("user", "")
-    logging.info(f"uploaded_files:{uploaded_files}")
+    slogger.info(f"uploaded_files:{uploaded_files}")
     file_paths = [x.name for x in uploaded_files]
-    logging.info(f"file_paths:{file_paths}")
+    slogger.info(f"file_paths:{file_paths}")
     filenames = []
     error_filenames = []
     allow_files = []
@@ -71,16 +72,16 @@ def upload():
     # 此处后边也要改成tempfile模式？？？ TODO
     for file in uploaded_files:
         if file and allowed_file(file.filename):
-            logging.info(f"filename.:{file.filename}")
+            slogger.info(f"filename.:{file.filename}")
             # filename = secure_filename(file.filename)  # NND，对中文不友好，导致文件名丢失！！！
             filename = file.filename
-            logging.info(f"filename:{filename}")
+            slogger.info(f"filename:{filename}")
             full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(full_filename)
             filenames.append(filename)
             # 组装file参数，否则是错误的，导致只有最后一份有数据 !!!
             file.name = full_filename
-            logging.info(f"file.name:{file.name}")
+            slogger.info(f"file.name:{file.name}")
 
             allow_files.append(file)  # TODO 可以直接返回str（allow_files)，避免等待太久，增加训练接口
         else:  # 文件后缀不符合类型或者文件太大
@@ -116,14 +117,14 @@ def index():
 def query():
     text = request.args.get('content', "你好")
     user = request.args.get('user', '')
-    logging.info(text)
+    slogger.info(text)
     res = chatbot_data(text, user)
     return res
 
 
 @app.route('/chatbot_data')
 def chatbot_data(message="写个故事，50字以内", user=''):
-    logging.info('chatbot_data-' * 5)
+    slogger.info('chatbot_data-' * 5)
 
     def get_predict_data(message, user=''):
         client, message, chatbot, stream = chat(message)
@@ -132,9 +133,9 @@ def chatbot_data(message="写个故事，50字以内", user=''):
         reply_language = "跟随问题语言（不稳定）"  # 自动跟随  TODO
         for i in client.predict(inputs=message, chatbot=chatbot, stream=stream, force_index=force_index,
                                 base_index='index', user_id=user, add_refs=add_refs, reply_language=reply_language):
-            logging.info(i)
+            slogger.info(i)
             d = i[0][0][-1]
-            logging.info(d)
+            slogger.info(d)
             json_data = json.dumps(
                 {'time': 0, 'value': d})
             # json_data = json.dumps(
@@ -158,13 +159,13 @@ def html_handler():
     soup = BeautifulSoup(response.content, 'html.parser')
     # 从HTML中提取出文本内容并去除换行、空格等字符
     text = soup.get_text().replace('\n', '').replace('\r', '').replace('\t', '').strip()
-    logging.info(f"type:{type(text)},text:{text}")
+    slogger.info(f"type:{type(text)},text:{text}")
 
     def get_data(txt=None):
         content = ""
         try:
-            logging.info(f"len txt:{len(txt)}，txt:{txt}")
-            logging.info("超出4096的部分将截断！！！")  # TODO 按\n截取，4k以内最长的\n，分段解析再合并
+            slogger.info(f"len txt:{len(txt)}，txt:{txt}")
+            slogger.info("超出4096的部分将截断！！！")  # TODO 按\n截取，4k以内最长的\n，分段解析再合并
             txt = txt[:4000]
             url = 'https://openai.putaojie.top/v1/chat/completions'
             headers = {'Authorization': f'Bearer {api_key}',
@@ -176,26 +177,26 @@ def html_handler():
             }
 
             response = requests.post(url, data=json.dumps(data), headers=headers)
-            logging.info(response.status_code)
+            slogger.info(response.status_code)
             # 处理响应结果
             if response.status_code == 200:
                 json_dict = response.json()  # 解析JSON
                 # 从JSON字符串中提取内容字段
                 content = json.loads(json_dict['choices'][0]['message']['content'])  # 获取指定字段
-                logging.info(f"content:{content}")
+                slogger.info(f"content:{content}")
                 # with open(f'doc/{i}.json', 'w', encoding='utf-8') as f:
                 #     f.write(json.dumps(content, ensure_ascii=False))
             else:
-                logging.info("请求失败")
+                slogger.info("请求失败")
         except Exception as e:
             logging.error(f"get_data error:{e}")
         return content
 
     # Pass the SpooledTemporaryFile to UploadFile
     result = get_data(text)
-    logging.info(f"result:{result}")
+    slogger.info(f"result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
-    logging.info(f"temp_file_path:{temp_file_path}")
+    slogger.info(f"temp_file_path:{temp_file_path}")
     # 即使抽取失败，不影响索引构建，但是可能影响名片字段的入库 TODO
     with open(temp_file_path, 'w', encoding='utf8') as temp_file:
         if result:
@@ -215,13 +216,13 @@ def html_handler():
 def text_handler():
     user = request.form.get("user", "")
     text = request.form.get("text", "")
-    logging.info(f"len text:{len(text)}，txt:{text}")
-    logging.info("超出4096的部分将截断！！！")  # TODO 按\n截取，4k以内最长的\n，分段解析再合并
+    slogger.info(f"len text:{len(text)}，txt:{text}")
+    slogger.info("超出4096的部分将截断！！！")  # TODO 按\n截取，4k以内最长的\n，分段解析再合并
     text = text[:4000]
-    logging.info(text)
+    slogger.info(text)
 
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
-    logging.info(f"temp_file_path:{temp_file_path}")
+    slogger.info(f"temp_file_path:{temp_file_path}")
     with open(temp_file_path, 'w', encoding='utf8') as temp_file:
         temp_file.write(str(text))
 
@@ -235,13 +236,13 @@ def text_handler():
 
 @app.route('/sqa', methods=['POST'])
 def sqa_handler():
-    user = request.form.get("user", "")
+    user = request.form.get("user", "test")
     domain = request.form.get("domain", "faq")
-    query = request.form.get("query", "")
-    logging.info(f"user:{user}, query:{query}")
-    print(f"user:{user}, domain:{domain}, query:{query}")
+    lang = request.form.get("lang", "简体中文")  # lang字面量必须和query的语言一致才可以
+    query = request.form.get("query", "hello")
+    slogger.info(f"user:{user}, domain:{domain}, lang:{lang}, query:{query}")
     try:
-        db_chain = get_table(table=domain, query=query)
+        db_chain = get_table(table=domain, query=query, lang=lang)
         res = db_chain.run(query)
     except Exception as e:
         traceback.print_exc()
