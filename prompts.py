@@ -5,6 +5,15 @@ FIELD_EXTRACTOR_TEMPLATE = """
     query:{query_str}
 """
 
+FIELD_EXTRACTOR_TEMPLATE_L1 = """
+    假如你是数据工程师，请把如下个人信息（query）按照JSON的格式整理给我：
+    参考字段：专长，行医，门诊时间，综合评价，资质认证状态，基本信息，简介，姓名，医院机构，职务，职称，学术兼职，地区，邮箱，手机，昕康ID，履历，教育经历，工作经历，研究，研究方向和临床研究，课题和基金，发表，发表文章，出版著作，专利和软著，执笔共识，成就，荣誉获奖\n
+    Notice: If doctor or hospital not in the context, skip this one\n
+    JSON的格式：{"xxx":"xxx","xxx_xxx":"xxx"}，JSON的字段层级只能是一级，多个层级用"_"拼接，字段名和值都是字符串类型
+    Return only the JSON and nothing else:\n
+    query:{query_str}
+"""
+
 INTENT_TO_TABLE_PROMPTS = """
     根据以下三张表的表结构字段，判断这个问句（query）需要用到哪张表。
     问句:{query_str}
@@ -50,7 +59,9 @@ SQL_LANG_TEMPLATE = """Given an input question, first translate to English,
     Question: "Question here"
     SQLQuery: "SQL Query to run"
     SQLResult: "Result of the SQLQuery"
-    Answer: "Final answer here", reply in __lang_str__ language.
+    Answer: "Final answer here"
+    
+    reply in __lang_str__ language
 
     Only use the following tables:
 

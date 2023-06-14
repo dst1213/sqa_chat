@@ -33,7 +33,7 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
         slogger.info(response)
         slogger.info(f"query:{query}")
         slogger.info(f"real_query:{real_query}")
-
+        slogger.info(f"response.status_code:{response.status_code}, response.text:{response.text}")
         if response.status_code == 200:
             json_dict = response.json()  # 解析JSON
             slogger.info(f"json_dict:{json_dict}")
