@@ -118,7 +118,7 @@ class LoggerTool:
 
     def _file_logger(self):
         size_rotate_file_handler = RotatingFileHandler(filename=LOG_FILE, maxBytes=LOG_PARAM_MAXBYTES,
-                                                       backupCount=LOG_PARAM_BACKUPCOUNT)
+                                                       backupCount=LOG_PARAM_BACKUPCOUNT,encoding='utf8')  # 还是有报错
         size_rotate_file_handler.setFormatter(logging.Formatter(self.formatter))
         size_rotate_file_handler.setLevel(level=LOG_LEVEL)
         return size_rotate_file_handler

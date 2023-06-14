@@ -11,3 +11,10 @@
 ### linux
 - source ~/.virtualenvs/sqa_chat/bin/activate
 - python main.py
+
+
+### 翻译工具
+```angular2html
+    百度翻译-200种语言互译、沟通全世界！
+    https://fanyi.baidu.com/?aldtype=16047#auto/zh
+```

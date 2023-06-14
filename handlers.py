@@ -16,14 +16,18 @@ load_dotenv()
 # db = SQLDatabase.from_uri("sqlite:///med_db/doctor_0612.db", include_tables=['doctor'])
 # db = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
 db_all = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq', 'doctors'])
-db_faq = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['faq'])
+# db_faq = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['faq'])
+db_faq = SQLDatabase.from_uri("sqlite:///med_db/doctor_tom.db", include_tables=['faq_chinese'])  # 2023年6月13日
 db_faq_new = SQLDatabase.from_uri("sqlite:///med_db/faq_chinese_new.db", include_tables=['faq_chinese_new'])
 
 # db_ct = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial', 'faq'])
 db_ct_demo = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['clinical_trial_demo', 'faq'])
 # db_doctor = SQLDatabase.from_uri("sqlite:///med_db/test.db", include_tables=['doctors','faq'])
-db_doctor = SQLDatabase.from_uri("sqlite:///med_db/doctor.db", include_tables=['doctors'])  # 2023.06.12 doctor
-db_ct = SQLDatabase.from_uri("sqlite:///med_db/clinicaltrials.db", include_tables=['doctor'])  # 2023.06.12 clinical_trial
+# db_doctor = SQLDatabase.from_uri("sqlite:///med_db/doctor.db", include_tables=['doctors'])  # 2023.06.12 doctor
+# db_doctor = SQLDatabase.from_uri("sqlite:///med_db/doctor_tom.db", include_tables=['doctor'])  # 2023年6月13日
+db_doctor = SQLDatabase.from_uri("sqlite:///med_db/doctor_tom.db", include_tables=['doctor_spanish'])  # 2023年6月14日
+# db_ct = SQLDatabase.from_uri("sqlite:///med_db/clinicaltrials.db", include_tables=['doctor'])  # 2023.06.12 clinical_trial
+db_ct = SQLDatabase.from_uri("sqlite:///med_db/doctor_tom.db", include_tables=['clinical_trial'])  # 2023年6月13日
 db_pb = SQLDatabase.from_uri("sqlite:///med_db/pubmed2.db", include_tables=['pubmed'])  # 2023.06.12 clinical_trial
 
 llm = OpenAI(temperature=0, verbose=True)
