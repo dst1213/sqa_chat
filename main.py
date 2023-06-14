@@ -45,7 +45,7 @@ def html_handler():
 
     # Pass the SpooledTemporaryFile to UploadFile
     prompt = prompts.FIELD_EXTRACTOR_TEMPLATE
-    result = get_data(text,prompt,model='gpt-3.5-turbo-16k')
+    result = get_data(text,prompt,model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
     slogger.info(f"result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
@@ -55,6 +55,8 @@ def html_handler():
             temp_file.write(str(result))
         else:
             temp_file.write(str(text))
+
+    # 入库
 
 
     return {"data": "success"}

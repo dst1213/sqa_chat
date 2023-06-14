@@ -1,6 +1,7 @@
 import json
 import os
 import traceback
+import sqlite3
 
 import requests
 import prompts
@@ -46,3 +47,4 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
         slogger.info(f"error:{e}")
     return content
     # 处理响应结果
+
