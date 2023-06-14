@@ -1,5 +1,10 @@
 from langchain import PromptTemplate
 
+FIELD_EXTRACTOR_TEMPLATE = """
+    Notice: If doctor or hospital not in the context, skip this one 假如你是数据工程师，请把如下个人信息按照JSON的格式整理给我：（参考字段：行医，门诊时间，综合评价，资质认证状态，基本信息，简介，姓名，医院/机构，专长，职务，职称，学术兼职，地区，邮箱，手机，昕康ID/XK_ID，履历，教育经历，工作经历，研究，研究方向/临床研究，课题/基金，发表，发表文章，出版著作，专利和软著，执笔共识，成就，荣誉获奖）Return only the translation and nothing else:\n
+    query:{query_str}
+"""
+
 INTENT_TO_TABLE_PROMPTS = """
     根据以下三张表的表结构字段，判断这个问句（query）需要用到哪张表。
     问句:{query_str}

@@ -1,25 +1,32 @@
 import json
+import os
 import traceback
 
 import requests
-import prompt_templates
+import prompts
 from log_tool import slogger
 from dotenv import load_dotenv
 
 load_dotenv()
 
+api_key = os.environ.get("OPENAI_API_KEY")
+api_host = os.environ.get("OPENAI_API_BASE")
+gpt_model = "gpt-3.5-turbo"
+# gpt_model = "gpt-3.5-turbo-16k"
 
-def get_data(query=None, prompt=None):
+
+def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     content = None
-    url = 'https://gpt-api.putaojie.top/v1/chat/completions'
-    headers = {'Authorization': 'Bearer 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',
+    url = f'{api_host}/chat/completions'
+    headers = {'Authorization': f'Bearer {api_key}',
                'Content-Type': 'application/json'}
 
     real_query = prompt.replace("{query_str}", query)
     data = {
-        "model": "gpt-3.5-turbo",
+        "model": model,
         "messages": [{"role": "user", "content": real_query}]
     }
+    slogger.info(f"get_data: model:{gpt_model}")
     try:
         response = requests.post(url, data=json.dumps(data), headers=headers)
         slogger.info(response)
