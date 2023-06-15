@@ -27,7 +27,7 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
         "model": model,
         "messages": [{"role": "user", "content": real_query}]
     }
-    slogger.info(f"get_data: model:{gpt_model}")
+    slogger.info(f"get_data: model:{model}")
     try:
         response = requests.post(url, data=json.dumps(data), headers=headers)
         slogger.info(response)
