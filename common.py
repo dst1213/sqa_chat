@@ -13,6 +13,8 @@ load_dotenv()
 api_key = os.environ.get("OPENAI_API_KEY")
 api_host = os.environ.get("OPENAI_API_BASE")
 gpt_model = "gpt-3.5-turbo"
+
+
 # gpt_model = "gpt-3.5-turbo-16k"
 
 
@@ -48,3 +50,27 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     return content
     # 处理响应结果
 
+
+def chat_translate(text, target_lang='English'):
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {api_key}'
+    }
+    url = f"{api_host}/chat/completions"
+    payload = json.dumps({
+        "model": "gpt-3.5-turbo",
+        "messages": [{
+            'role': 'system',
+            'content': 'You are a translator assistant.'
+        }, {
+            "role":
+                "user",
+            "content":
+                f"Translate the following text into {target_lang} language. Retain the original format. Return only the translation (without original text) and nothing else:\n{text}"
+        }]
+    })
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    slogger.info(response.text)
+    return response.text

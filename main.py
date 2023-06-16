@@ -11,7 +11,7 @@ from flask import Flask, request, Response, render_template, stream_with_context
 import websockets
 
 import prompts
-from common import get_data
+from common import get_data, chat_translate
 from db_model import write_doctor_table
 from handlers import get_table
 from log_tool import slogger
@@ -101,8 +101,22 @@ def sqa_handler():
     query = request.form.get("query", "hello")
     slogger.info(f"user:{user}, domain:{domain}, lang:{lang}, query:{query}")
     try:
-        db_chain = get_table(user,table=domain, query=query, lang=lang)
+        db_chain = get_table(user, table=domain, query=query, lang=lang)
         res = db_chain.run(query)
+    except Exception as e:
+        traceback.print_exc()
+        res = {'error': str(e)}
+    return {'data': res}
+
+
+@app.route('/trans', methods=['POST'])
+def chatgpt_trans():
+    user = request.form.get("user", "test")
+    target_lang = request.form.get("target_lang", "English")  # lang字面量必须和query的语言一致才可以
+    query = request.form.get("query", "你好")
+    slogger.info(f"user:{user},  target_lang:{target_lang}, query:{query}")
+    try:
+        res = chat_translate(query, target_lang=target_lang)
     except Exception as e:
         traceback.print_exc()
         res = {'error': str(e)}
