@@ -4,11 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.3 sql模型的text，crawl接口改完，db模型写完，增加llm为3.5或者16k的模式">
+    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.4 新增翻译接口">
+      <change afterPath="$PROJECT_DIR$/test/smart_text_splitter.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deployment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deployment.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/common.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/gpt-3.5-16k.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test/gpt-3.5-16k.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,8 +19,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Jupyter Notebook" />
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
@@ -216,7 +217,8 @@
       <workItem from="1686822008209" duration="53000" />
       <workItem from="1686822652632" duration="1848000" />
       <workItem from="1686876663563" duration="1190000" />
-      <workItem from="1686882729641" duration="1528000" />
+      <workItem from="1686882729641" duration="3125000" />
+      <workItem from="1686964874880" duration="4784000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1686537519365</created>
@@ -344,7 +346,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686821039433</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="v0.4 新增翻译接口">
+      <created>1686885126086</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1686885126086</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -364,7 +373,8 @@
     <MESSAGE value="v0.2 支持西班牙语对日志编码修改" />
     <MESSAGE value="v0.2 gpt-3.5-turbo-16k测试" />
     <MESSAGE value="v0.3 sql模型的text，crawl接口改完，db模型写完，增加llm为3.5或者16k的模式" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.3 sql模型的text，crawl接口改完，db模型写完，增加llm为3.5或者16k的模式" />
+    <MESSAGE value="v0.4 新增翻译接口" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.4 新增翻译接口" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/sqa_chat$common.coverage" NAME="common Coverage Results" MODIFIED="1686718935183" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

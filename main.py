@@ -18,6 +18,8 @@ from log_tool import slogger
 
 from dotenv import load_dotenv
 
+from utils import long_text_extractor
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -46,8 +48,9 @@ def html_handler():
     slogger.info(f"type:{type(text)},text:{text}")
 
     # 结构化抽取
-    prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
-    result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
+    # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
+    # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
+    result = long_text_extractor(text, limit=4000)
     slogger.info(f"result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
@@ -81,8 +84,9 @@ def text_handler():
         temp_file.write(str(text))
 
     # 结构化抽取
-    prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
-    result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
+    # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
+    # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
+    result = long_text_extractor(text, limit=4000)
     slogger.info(f"result:{result}")
 
     data = json.loads(result)
