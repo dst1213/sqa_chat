@@ -121,7 +121,12 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
     if nodup:
         new_merged={}
         for k,v in merged.items():
-            new_merged[k] = list(set(merged[k])) if isinstance(merged[k],list) else merged[k]
+            try:
+                new_merged[k] = list(set(merged[k])) if isinstance(merged[k],list) else merged[k]
+            except Exception as e:
+                slogger.error(f"new_merged error:{e}")
+                traceback.print_exc()
+                new_merged[k] = merged[k]
 
         merged = new_merged
         slogger.info(f"nodup merged:{merged}")

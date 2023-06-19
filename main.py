@@ -50,8 +50,8 @@ def html_handler():
     # 结构化抽取
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
-    repeat = 0
-    result = long_text_extractor(text, limit=15000, repeat=repeat)  # default repeat=0
+    repeat = 1
+    result = long_text_extractor(text, limit=50000, repeat=repeat)  # default repeat=0  # 15000比较好
     slogger.info(f"repeat:{repeat},result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
@@ -100,7 +100,7 @@ def text_handler():
 
 @app.route('/sqa', methods=['POST'])
 def sqa_handler():
-    user = request.form.get("user", "test")
+    user = request.form.get("user", "")
     domain = request.form.get("domain", "faq")
     lang = request.form.get("lang", "简体中文")  # lang字面量必须和query的语言一致才可以
     query = request.form.get("query", "hello")

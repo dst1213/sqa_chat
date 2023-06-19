@@ -14,6 +14,7 @@ load_dotenv()
 api_key = os.environ.get("OPENAI_API_KEY")
 api_host = os.environ.get("OPENAI_API_BASE")
 api_host_bak = os.environ.get("OPENAI_API_BASE_BACKUP")
+api_host_bak2 = os.environ.get("OPENAI_API_BASE_BACKUP2")
 gpt_model = "gpt-3.5-turbo"
 
 import timeout_decorator  # pip install timeout-decorator
@@ -53,7 +54,10 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 # gpt_model = "gpt-3.5-turbo-16k"
 
 
-@timeout_and_retry(timeout=BAOSTOCK_TIMEOUT, wait_fixed=BAOSTOCK_WAIT_INTERVAL,stop_max_attempt_number=BAOSTOCK_RETRY,retry_on_exception=BaostockUtils.exception)
+# @timeout_and_retry(timeout=BAOSTOCK_TIMEOUT, wait_fixed=BAOSTOCK_WAIT_INTERVAL,stop_max_attempt_number=BAOSTOCK_RETRY,retry_on_exception=BaostockUtils.exception)
+@retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
+       retry_on_exception=BaostockUtils.exception)
+# @timeout_decorator.timeout(BAOSTOCK_TIMEOUT,use_signals=False)  # 有问题，signal only works in main thread of the main interpreter
 def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     content = None
     # url = f'{api_host}/chat/completions'
@@ -68,16 +72,16 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     }
     slogger.info(f"get_data: model:{model}")
     try:
-        response = requests.post(url, data=json.dumps(data), headers=headers,timeout=180)   # 不然服务器会卡死
+        response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)   # 不然服务器会卡死
         slogger.info(response)
-        slogger.info(f"query:{query}")
+        slogger.info(f"url:{url}, query:{query}")
         slogger.info(f"real_query:{real_query}")
         slogger.info(f"response.status_code:{response.status_code}, response.text:{response.text}")
         if response.status_code == 200:
             if "That model is currently overloaded with other requests" in response.text:
                 slogger.info(f"openai overloaded, get_data retrying:{url}")
                 time.sleep(3)
-                response = requests.post(url, data=json.dumps(data), headers=headers,timeout=180)
+                response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)
                 slogger.info(response)
                 slogger.info(f"query:{query}")
                 slogger.info(f"real_query:{real_query}")
