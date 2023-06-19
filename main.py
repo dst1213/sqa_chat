@@ -50,8 +50,9 @@ def html_handler():
     # 结构化抽取
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
-    result = long_text_extractor(text, limit=4000)
-    slogger.info(f"result:{result}")
+    repeat = 0
+    result = long_text_extractor(text, limit=15000, repeat=repeat)  # default repeat=0
+    slogger.info(f"repeat:{repeat},result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
     # 即使抽取失败，不影响索引构建，但是可能影响名片字段的入库 TODO
@@ -61,7 +62,7 @@ def html_handler():
         else:
             temp_file.write(str(text))
 
-    data = json.loads(result)
+    data = json.loads(result) if isinstance(result,str) else result
     # 字段入库
     write_doctor_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
                        drop_first=True, back_first=True)
