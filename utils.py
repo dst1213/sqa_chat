@@ -48,22 +48,30 @@ def split_text(text, limit):
     return parts
 
 
-def handle(text):
+def handle(text,model_type='gpt-3.5-turbo',out_type='json'):
     # 你的handle函数，这里只是一个示例
     result = {}
     try:
         # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
         prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L2
-        result = get_data(text, prompt, model='gpt-3.5-turbo-16k')  # gpt-3.5-turbo-16k
+        if model_type != 'text-davinci-003':
+            result = get_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
+        else:
+            result = get_data_davinci(text, prompt, model='text-davinci-003')  # gpt-3.5-turbo-16k
         slogger.info(f"result:{result}")
-        result = json.loads(result)
+        if out_type == 'json':
+            result = json.loads(result)
     except Exception as e:
         slogger.error(f"handle error:{e}")  # chatgpt返回的json可能格式是错的，要重试
         try:
             prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
-            result = get_data(text, prompt, model='gpt-3.5-turbo-16k')  # gpt-3.5-turbo-16k
+            if model_type != 'text-davinci-003':
+                result = get_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
+            else:
+                result = get_data_davinci(text, prompt, model='text-davinci-003')  # gpt-3.5-turbo-16k
             slogger.info(f"result:{result}")
-            result = json.loads(result)
+            if out_type == 'json':
+                result = json.loads(result)
         except Exception as e:
             slogger.error(f"handle error:{e}")
     return result
@@ -92,7 +100,7 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
     merged = {}
     for result in results:
         slogger.info(f"merge_results result:type:{type(result)}, result:{result}")
-        if result:
+        if result and isinstance(result,dict):
             for key, value in result.items():
                 if value:
                     if key.lower() in merged:
@@ -137,13 +145,13 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
     return merged
 
 
-def long_text_extractor(text, limit=4000, repeat=0, to_str=True):
+def long_text_extractor(text, limit=4000, repeat=0, to_str=True, model_type='gpt-3.5-turbo'):
     results = []
     split_parts = split_text(text, limit)
     for i in range(repeat + 1):
         for part in split_parts:
             try:
-                result = handle(part)
+                result = handle(part,model_type=model_type)
                 if result:
                     results.append(result)
                 time.sleep(30)  # cloudflare 504

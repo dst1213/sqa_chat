@@ -50,8 +50,8 @@ def html_handler():
     # 结构化抽取
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
-    repeat = 1
-    result = long_text_extractor(text, limit=50000, repeat=repeat)  # default repeat=0  # 15000比较好
+    repeat = 0
+    result = long_text_extractor(text[:49999], limit=50000, repeat=repeat,model_type='gpt-3.5-turbo-16k')  # default repeat=0  # 15000比较好
     slogger.info(f"repeat:{repeat},result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
@@ -87,7 +87,8 @@ def text_handler():
     # 结构化抽取
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
-    result = long_text_extractor(text, limit=4000)
+    repeat = 0
+    result = long_text_extractor(text[:49999], limit=50000, repeat=repeat,model_type='gpt-3.5-turbo-16k')
     slogger.info(f"result:{result}")
 
     data = json.loads(result)

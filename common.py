@@ -99,6 +99,51 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     return content
     # 处理响应结果
 
+@retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
+       retry_on_exception=BaostockUtils.exception)
+# @timeout_decorator.timeout(BAOSTOCK_TIMEOUT,use_signals=False)  # 有问题，signal only works in main thread of the main interpreter
+def get_data_davinci(query=None, prompt=None, model='text-davinci-003'):
+    content = None
+    # url = f'{api_host}/chat/completions'
+    url = f'{api_host_bak}/completions'
+    headers = {'Authorization': f'Bearer {api_key}',
+               'Content-Type': 'application/json'}
+
+    real_query = prompt.replace("{query_str}", query)
+    data = {
+        "model": model,
+        "prompt": real_query,
+        "temperature": 0
+    }
+    slogger.info(f"get_data: model:{model}")
+    try:
+        response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)   # 不然服务器会卡死
+        slogger.info(response)
+        slogger.info(f"url:{url}, query:{query}")
+        slogger.info(f"real_query:{real_query}")
+        slogger.info(f"response.status_code:{response.status_code}, response.text:{response.text}")
+        if response.status_code == 200:
+            if "That model is currently overloaded with other requests" in response.text:
+                slogger.info(f"openai overloaded, get_data retrying:{url}")
+                time.sleep(3)
+                response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)
+                slogger.info(response)
+                slogger.info(f"query:{query}")
+                slogger.info(f"real_query:{real_query}")
+                slogger.info(f"response.status_code:{response.status_code}, response.text:{response.text}")
+            json_dict = response.json()  # 解析JSON
+            slogger.info(f"json_dict:{json_dict}")
+            # 从JSON字符串中提取内容字段
+            content = json_dict['choices'][0]['text']  # 获取指定字段
+            slogger.info(f"content:{content}")
+        else:
+            slogger.info("请求失败")
+    except Exception as e:
+        traceback.print_exc()
+        slogger.info(f"error:{e}")
+    return content
+    # 处理响应结果
+
 
 def chat_translate(text, target_lang='English'):
     headers = {
