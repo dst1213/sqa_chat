@@ -35,3 +35,8 @@ pip install https://files.pythonhosted.org/packages/a8/2d/32ac18b8a9e0905d2cf7f6
     百度翻译-200种语言互译、沟通全世界！
     https://fanyi.baidu.com/?aldtype=16047#auto/zh
 ```
+
+
+### 需求
+- 医生字段信息(1)
+https://www.kdocs.cn/l/crUA7eMgelFB
