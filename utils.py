@@ -3,6 +3,11 @@ import timeout_decorator  # pip install timeout-decorator
 from retrying import retry
 import warnings
 import platform
+import re
+
+import requests
+
+from lxml.html import clean
 from common import *
 
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
@@ -147,7 +152,7 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
     return merged
 
 
-def long_text_extractor(text, limit=4000, repeat=0, out_type='json',to_str=True, model_type='gpt-3.5-turbo'):
+def long_text_extractor(text, limit=4000, repeat=0, out_type='json',to_str=True, model_type='gpt-3.5-turbo',url=None):
     results = []
     split_parts = split_text(text, limit)
     for i in range(repeat + 1):
@@ -163,11 +168,55 @@ def long_text_extractor(text, limit=4000, repeat=0, out_type='json',to_str=True,
                 slogger.error(f"long_text_extractor error:{e}")
     if out_type == 'json':
         merged = merge_results(results)
+        merged['pmid'] = ','.join(get_pubmed_id_link(url=url))
         slogger.info(f"merged:{merged}")
     else:
         merged = '\n'.join(results)
+        merged += '\n'+ ','.join(get_pubmed_id_link(url=url))
+        slogger.info(f"merged:{merged}")
     return merged
 
 
+def get_pubmed_id_link(html=None,url=None):
+    # 除了保留的attribute其他的删除
+    safe_attrs = frozenset(['controls', 'poster', 'src', 'href', 'alt'])
+    # 默认删除script之类的无用标签，若需保留则添加scripts=False
+    # 默认删除的有<script>, javascript, comments, style, <link>, <meta>等
+    cleaner = clean.Cleaner(safe_attrs_only=True, safe_attrs=safe_attrs)
+
+    html_string = """ ... """  # 这里应该是HTML文本
+    # with open("data/Zacny.txt", "r", encoding="utf8") as f:
+    #     text = f.read()
+    content=None
+    pmids = []
+
+    try:
+        if url:
+            # url = "https://profiles.uchicago.edu/profiles/display/37485"
+            # url = "https://www.bcm.edu/people-search/thomas-kosten-24837"
+            response = requests.get(url,verify=False)
+            # html = response.text
+            content = cleaner.clean_html(response.text)
+        elif html:
+            # 注意html文本必须清洗过，否则可能提取有问题
+            content = cleaner.clean_html(html)
+
+        pattern = r'<a href=(")?(https?:)?//(www\.)?ncbi.nlm.nih.gov/pubmed/(\?term=)?(\d+)'
+        matches = re.findall(pattern, content)
+
+        for match in matches:
+            pmid = match[-1]  # PMID是最后一个捕获组
+            full_link = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"  # 生成完整链接
+            print(f'PMID: {pmid}, Link: {full_link}')
+            pmids.append(pmid)
+        pmids = list(set(pmids)) if pmids else pmids
+        slogger.info(f"len pmids:{len(pmids)}")
+    except Exception as e:
+        slogger.error(f"get_pubmed_id_link error:{e}")
+    return pmids
+
 if __name__ == "__main__":
     text = "这里是你的长文本"  # 请将此处替换为你的长文本
+    with open("test/data/Zacny.html.txt",'r',encoding='utf8') as f:
+        text = f.read()
+    get_pubmed_id_link(url="https://profiles.uchicago.edu/profiles/display/37485")

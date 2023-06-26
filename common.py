@@ -58,7 +58,7 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 
 # gpt_model = "gpt-3.5-turbo-16k"
 
-
+# TODO 16k有很多时候的结果是需要继续的，当前没有做“继续”指令
 # @timeout_and_retry(timeout=BAOSTOCK_TIMEOUT, wait_fixed=BAOSTOCK_WAIT_INTERVAL,stop_max_attempt_number=BAOSTOCK_RETRY,retry_on_exception=BaostockUtils.exception)
 @retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
        retry_on_exception=BaostockUtils.exception)
