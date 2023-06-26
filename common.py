@@ -25,11 +25,14 @@ import platform
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
 BAOSTOCK_RETRY = 3  # baostock重试次数,3
 BAOSTOCK_WAIT_INTERVAL = 3000  # ms毫秒，wait_fixed 设置失败重试的间隔时间,2000
+
+
 class BaostockUtils:
 
     @staticmethod
     def exception(e):
         return isinstance(e, Exception)
+
 
 # 最终版，超时后自动重试，支持windows（不做超时和重试）和Linux
 def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, retry_on_exception=None,
@@ -51,6 +54,8 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
         return caller
 
     return decorator
+
+
 # gpt_model = "gpt-3.5-turbo-16k"
 
 
@@ -68,11 +73,12 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     real_query = prompt.replace("{query_str}", query)
     data = {
         "model": model,
+        "temperature": 0,
         "messages": [{"role": "user", "content": real_query}]
     }
     slogger.info(f"get_data: model:{model}")
     try:
-        response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)   # 不然服务器会卡死
+        response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)  # 不然服务器会卡死
         slogger.info(response)
         slogger.info(f"url:{url}, query:{query}")
         slogger.info(f"real_query:{real_query}")
@@ -81,7 +87,7 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
             if "That model is currently overloaded with other requests" in response.text:
                 slogger.info(f"openai overloaded, get_data retrying:{url}")
                 time.sleep(3)
-                response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)
+                response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)
                 slogger.info(response)
                 slogger.info(f"query:{query}")
                 slogger.info(f"real_query:{real_query}")
@@ -98,6 +104,7 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
         slogger.info(f"error:{e}")
     return content
     # 处理响应结果
+
 
 @retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
        retry_on_exception=BaostockUtils.exception)
@@ -117,7 +124,7 @@ def get_data_davinci(query=None, prompt=None, model='text-davinci-003'):
     }
     slogger.info(f"get_data: model:{model}")
     try:
-        response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)   # 不然服务器会卡死
+        response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)  # 不然服务器会卡死
         slogger.info(response)
         slogger.info(f"url:{url}, query:{query}")
         slogger.info(f"real_query:{real_query}")
@@ -126,7 +133,7 @@ def get_data_davinci(query=None, prompt=None, model='text-davinci-003'):
             if "That model is currently overloaded with other requests" in response.text:
                 slogger.info(f"openai overloaded, get_data retrying:{url}")
                 time.sleep(3)
-                response = requests.post(url, data=json.dumps(data), headers=headers,timeout=300)
+                response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)
                 slogger.info(response)
                 slogger.info(f"query:{query}")
                 slogger.info(f"real_query:{real_query}")

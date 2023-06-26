@@ -45,13 +45,16 @@ def html_handler():
     soup = BeautifulSoup(response.content, 'html.parser')
     # 从HTML中提取出文本内容并去除换行、空格等字符
     text = soup.get_text().replace('\n', '').replace('\r', '').replace('\t', '').strip()
-    slogger.info(f"type:{type(text)},text:{text}")
+    # text = soup.get_text().replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t').strip()
+    # with open("test/Thomas Kosten, M.D. _ BCM.txt",'r',encoding='utf8') as f:
+    #     text = f.read()
+    # slogger.info(f"type:{type(text)},text:{text}")
 
     # 结构化抽取
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
     repeat = 0
-    result = long_text_extractor(text[:49999], limit=50000, repeat=repeat,model_type='gpt-3.5-turbo-16k')  # default repeat=0  # 15000比较好
+    result = long_text_extractor(text, limit=45000, repeat=repeat,out_type='txt',model_type='gpt-3.5-turbo-16k')  # default repeat=0  # 15000比较好
     slogger.info(f"repeat:{repeat},result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
@@ -62,10 +65,11 @@ def html_handler():
         else:
             temp_file.write(str(text))
 
-    data = json.loads(result) if isinstance(result,str) else result
-    # 字段入库
-    write_doctor_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
-                       drop_first=True, back_first=True)
+    data = result
+    # data = json.loads(result) if isinstance(result,str) else result
+    # # 字段入库
+    # write_doctor_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
+    #                    drop_first=True, back_first=True)
 
     return {"status": "success", "data": data}
 
@@ -88,7 +92,7 @@ def text_handler():
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
     repeat = 0
-    result = long_text_extractor(text[:49999], limit=50000, repeat=repeat,model_type='gpt-3.5-turbo-16k')
+    result = long_text_extractor(text, limit=2000, repeat=repeat,model_type='gpt-3.5-turbo')
     slogger.info(f"result:{result}")
 
     data = json.loads(result)

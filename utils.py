@@ -51,9 +51,11 @@ def split_text(text, limit):
 def handle(text,model_type='gpt-3.5-turbo',out_type='json'):
     # 你的handle函数，这里只是一个示例
     result = {}
+    # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
+    # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L2
+    prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L3
+    # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L4
     try:
-        # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
-        prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L2
         if model_type != 'text-davinci-003':
             result = get_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
         else:
@@ -64,7 +66,7 @@ def handle(text,model_type='gpt-3.5-turbo',out_type='json'):
     except Exception as e:
         slogger.error(f"handle error:{e}")  # chatgpt返回的json可能格式是错的，要重试
         try:
-            prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
+            slogger.error(f"try again......")
             if model_type != 'text-davinci-003':
                 result = get_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
             else:
@@ -141,25 +143,29 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
 
     if to_str:
         for k, v in merged.items():
-            merged[k] = ','.join(v) if isinstance(v, list) else str(v)
+            merged[k] = ','.join([str(x) for x in v]) if isinstance(v, list) else str(v)
     return merged
 
 
-def long_text_extractor(text, limit=4000, repeat=0, to_str=True, model_type='gpt-3.5-turbo'):
+def long_text_extractor(text, limit=4000, repeat=0, out_type='json',to_str=True, model_type='gpt-3.5-turbo'):
     results = []
     split_parts = split_text(text, limit)
     for i in range(repeat + 1):
-        for part in split_parts:
+        for idx,part in enumerate(split_parts,1):
+            slogger.info(f"======================第{idx}/{len(split_parts)}个片段===========================")
             try:
-                result = handle(part,model_type=model_type)
+                result = handle(part,model_type=model_type,out_type=out_type)
                 if result:
                     results.append(result)
-                time.sleep(30)  # cloudflare 504
+                # time.sleep(30)  # cloudflare 504
+                time.sleep(3)  # cloudflare 504
             except Exception as e:
                 slogger.error(f"long_text_extractor error:{e}")
-
-    merged = merge_results(results)
-    slogger.info(f"merged:{merged}")
+    if out_type == 'json':
+        merged = merge_results(results)
+        slogger.info(f"merged:{merged}")
+    else:
+        merged = '\n'.join(results)
     return merged
 
 
