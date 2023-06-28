@@ -151,17 +151,11 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
             merged[k] = ','.join([str(x) for x in v]) if isinstance(v, list) else str(v)
     return merged
 
-def llm_text_extractor():
-    pass
-
-def rule_text_extractor():
-    pass
-
-def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
+def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
     results = []
     split_parts = split_text(text, limit)
     for i in range(repeat + 1):
-        for idx,part in enumerate(split_parts,1):
+        for idx, part in enumerate(split_parts, 1):
             slogger.info(f"======================第{idx}/{len(split_parts)}个片段===========================")
             try:
                 result = llm_handler(part, model_type=model_type, out_type=out_type)
@@ -170,16 +164,31 @@ def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
                 # time.sleep(30)  # cloudflare 504
                 time.sleep(3)  # cloudflare 504
             except Exception as e:
-                slogger.error(f"web_text_extractor error:{e}")
+                slogger.error(f"llm_text_extractor error:{e}")
+    return results
+def rule_text_extractor(url):
+    pmids = get_pubmed_id_link(url=url)
+    return pmids
+
+def merge_strategy(llm_results, rule_results, out_type='json'):
     if out_type == 'json':
-        merged = merge_results(results)
-        merged['pmid'] = ','.join(get_pubmed_id_link(url=url))
+        merged = merge_results(llm_results)
+        merged['pmid'] = ','.join(rule_results)
         slogger.info(f"merged:{merged}")
     else:
-        results = list(set(results))
+        results = list(set(llm_results))
         merged = '\n'.join(results)
-        merged += '\npmid:'+ ','.join(get_pubmed_id_link(url=url))
+        merged += '\npmid:' + ','.join(rule_results)
         slogger.info(f"merged:{merged}")
+    return merged
+
+def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
+    # step1: 规则模板抽取
+    rule_results = rule_text_extractor(url)
+    # step2: LLM抽取（兜底）
+    llm_results = llm_text_extractor(text,limit,repeat,out_type,to_str,model_type,url)
+    # step3: 数据融合策略
+    merged = merge_strategy(llm_results, rule_results, out_type)
     return merged
 
 

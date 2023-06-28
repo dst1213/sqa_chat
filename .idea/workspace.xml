@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.6 URL长文本解析继续验证">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/llm_tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/db_models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/handlers.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/log_tool.py" beforeDir="false" afterPath="$PROJECT_DIR$/log_tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/crawler.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test/crawler.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/gpt-3.5-16k.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test/gpt-3.5-16k.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/smart_text_splitter.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test/smart_text_splitter.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/tmp/demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/tmp/demo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/后端面试题_01.md" beforeDir="false" afterPath="$PROJECT_DIR$/test/后端笔试题_01.md" afterDir="false" />
+    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.7 代码规范化，重命名，结构拆分">
       <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -331,7 +319,7 @@
       <workItem from="1687852938474" duration="5375000" />
       <workItem from="1687861443922" duration="2128000" />
       <workItem from="1687865369300" duration="54000" />
-      <workItem from="1687912827137" duration="9938000" />
+      <workItem from="1687912827137" duration="10695000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1686537519365</created>
@@ -531,7 +519,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687933815730</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="v0.7 代码规范化，重命名，结构拆分">
+      <created>1687937286027</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1687937286027</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -557,7 +552,8 @@
     <MESSAGE value="v0.6 URL长文本解析尝试" />
     <MESSAGE value="v0.6 URL长文本解析+pmid匹配" />
     <MESSAGE value="v0.6 URL长文本解析继续验证" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.6 URL长文本解析继续验证" />
+    <MESSAGE value="v0.7 代码规范化，重命名，结构拆分" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.7 代码规范化，重命名，结构拆分" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -571,16 +567,6 @@
           <url>file://$PROJECT_DIR$/main.py</url>
           <line>57</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>166</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>174</line>
-          <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
@@ -694,12 +680,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>175</line>
-          <option name="timeStamp" value="30" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>227</line>
+          <line>236</line>
           <option name="timeStamp" value="31" />
         </line-breakpoint>
       </breakpoints>
@@ -716,7 +697,7 @@
     <SUITE FILE_PATH="coverage/sqa_chat$main.coverage" NAME="main Coverage Results" MODIFIED="1686635917351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/sqa_chat$html_extractor_ok__1_.coverage" NAME="html_extractor-ok (1) Coverage Results" MODIFIED="1687859726162" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$pubmed_extractor.coverage" NAME="pubmed_extractor Coverage Results" MODIFIED="1687760717233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
-    <SUITE FILE_PATH="coverage/sqa_chat$main_local.coverage" NAME="main local Coverage Results" MODIFIED="1687937138637" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/sqa_chat$main_local.coverage" NAME="main local Coverage Results" MODIFIED="1687937917035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/sqa_chat$html2md.coverage" NAME="html2md Coverage Results" MODIFIED="1687863950032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$info_extractor.coverage" NAME="info_extractor Coverage Results" MODIFIED="1687859560363" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$html_extractor.coverage" NAME="html_extractor Coverage Results" MODIFIED="1687859657180" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
