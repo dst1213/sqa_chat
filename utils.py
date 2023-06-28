@@ -171,8 +171,9 @@ def long_text_extractor(text, limit=4000, repeat=0, out_type='json',to_str=True,
         merged['pmid'] = ','.join(get_pubmed_id_link(url=url))
         slogger.info(f"merged:{merged}")
     else:
+        results = list(set(results))
         merged = '\n'.join(results)
-        merged += '\n'+ ','.join(get_pubmed_id_link(url=url))
+        merged += '\npmid:'+ ','.join(get_pubmed_id_link(url=url))
         slogger.info(f"merged:{merged}")
     return merged
 
@@ -219,4 +220,6 @@ if __name__ == "__main__":
     text = "这里是你的长文本"  # 请将此处替换为你的长文本
     with open("test/data/Zacny.html.txt",'r',encoding='utf8') as f:
         text = f.read()
-    get_pubmed_id_link(url="https://profiles.uchicago.edu/profiles/display/37485")
+    # get_pubmed_id_link(url="https://profiles.uchicago.edu/profiles/display/37485")
+    # get_pubmed_id_link(url="https://sbmi.uth.edu/faculty-and-staff/dean-sittig.htm")
+    get_pubmed_id_link(url="https://www.hopkinsmedicine.org/profiles/details/lisa-cooper") # TUN

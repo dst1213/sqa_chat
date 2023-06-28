@@ -46,9 +46,9 @@ def extract_by_keyword(soup, keyword):
 
 
 # 用URL获取soup对象
-# soup = get_soup_from_url('https://www.bcm.edu/people-search/thomas-kosten-24837')
-soup = get_soup_from_url('https://profiles.uchicago.edu/profiles/display/37485')
-# soup = get_soup_from_url('https://support.psyc.vt.edu/users/wkbickel')
+soup = get_soup_from_url('https://www.bcm.edu/people-search/thomas-kosten-24837')  # ok，隐藏的不行
+# soup = get_soup_from_url('https://profiles.uchicago.edu/profiles/display/37485') # bad
+# soup = get_soup_from_url('https://support.psyc.vt.edu/users/wkbickel')  # ok
 
 # 提取关键词信息
 result = extract_by_keyword(soup, 'publications')

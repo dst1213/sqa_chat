@@ -35,8 +35,8 @@ def fuzzy_search_extract(soup, keyword):
 
 
 # 示例的HTML
-# url = "https://profiles.uchicago.edu/profiles/display/37485"
-url = "https://www.bcm.edu/people-search/thomas-kosten-24837"
+url = "https://profiles.uchicago.edu/profiles/display/37485"
+# url = "https://www.bcm.edu/people-search/thomas-kosten-24837"
 response = requests.get(url,verify=False)
 html = response.text
 # content = cleaner.clean_html(response.text)

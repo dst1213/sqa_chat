@@ -54,7 +54,8 @@ def html_handler():
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
     repeat = 0
-    result = long_text_extractor(text, limit=45000, repeat=repeat,out_type='txt',model_type='gpt-3.5-turbo-16k',url=url)  # default repeat=0  # 15000比较好
+    # TODO 等解决了16k的“继续"指令后再改txt为json，txt的多个分块问题多，先截断了
+    result = long_text_extractor(text[:45000], limit=50000, repeat=repeat,out_type='txt',model_type='gpt-3.5-turbo-16k',url=url)  # default repeat=0  # 15000比较好
     slogger.info(f"repeat:{repeat},result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
