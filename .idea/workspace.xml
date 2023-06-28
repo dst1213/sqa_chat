@@ -4,22 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.6 URL长文本解析+pmid匹配">
-      <change afterPath="$PROJECT_DIR$/test/only_pmid2-ok.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/publications_1.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/test.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/tmp/__init__.py" afterDir="false" />
+    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.6 URL长文本解析继续验证">
+      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/check_then_extract.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/tmp/check_then_extract.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/tmp/demo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/hangfenkuai.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/tmp/hangfenkuai.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/html2md.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html2md.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/html_clean.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html_clean.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/html_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html_extractor-ok.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/info_extractor.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/info_extractor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/only_pmid.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/only_pmid-ok.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubmed_regex.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/pubmed_regex.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,14 +81,14 @@
       <recent name="D:\vm_share\xinkang_workspace\sqa_chat\med_db" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\vm_share\xinkang_workspace\sqa_chat\test" />
       <recent name="D:\vm_share\xinkang_workspace\sqa_chat\test\tmp" />
       <recent name="D:\vm_share\xinkang_workspace\sqa_chat\test\data" />
-      <recent name="D:\vm_share\xinkang_workspace\sqa_chat\test" />
       <recent name="D:\vm_share\xinkang_workspace\sqa_chat" />
       <recent name="D:\vm_share\xinkang_workspace\sqa_chat\med_db" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.publications_1">
+  <component name="RunManager" selected="Python.pubmed_regex">
     <configuration name="html2md" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="sqa_chat" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -159,28 +147,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test/html_extractor-ok.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="html_extractor-ok" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="sqa_chat" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="D:\vm_share\xinkang_workspace\sqa_chat\test\html_extractor-ok.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -255,22 +221,44 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="pubmed_regex" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="sqa_chat" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="D:\vm_share\xinkang_workspace\sqa_chat\test\pubmed_regex.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.main remote" />
       <item itemvalue="Python.main local" />
+      <item itemvalue="Python.pubmed_regex" />
       <item itemvalue="Python.html2md" />
       <item itemvalue="Python.html_clean" />
       <item itemvalue="Python.publications_1" />
-      <item itemvalue="Python.html_extractor-ok" />
       <item itemvalue="Python.html_extractor-ok (1)" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.pubmed_regex" />
         <item itemvalue="Python.publications_1" />
         <item itemvalue="Python.html2md" />
         <item itemvalue="Python.html_clean" />
         <item itemvalue="Python.html_extractor-ok (1)" />
-        <item itemvalue="Python.html_extractor-ok" />
       </list>
     </recent_temporary>
   </component>
@@ -333,7 +321,7 @@
       <workItem from="1687852938474" duration="5375000" />
       <workItem from="1687861443922" duration="2128000" />
       <workItem from="1687865369300" duration="54000" />
-      <workItem from="1687912827137" duration="4658000" />
+      <workItem from="1687912827137" duration="6624000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1686537519365</created>
@@ -519,7 +507,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687775428709</updated>
     </task>
-    <option name="localTasksCounter" value="27" />
+    <task id="LOCAL-00027" summary="v0.6 URL长文本解析继续验证">
+      <created>1687924913928</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1687924913928</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -544,7 +539,8 @@
     <MESSAGE value="v0.5 URL长文本解析bug修复" />
     <MESSAGE value="v0.6 URL长文本解析尝试" />
     <MESSAGE value="v0.6 URL长文本解析+pmid匹配" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.6 URL长文本解析+pmid匹配" />
+    <MESSAGE value="v0.6 URL长文本解析继续验证" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.6 URL长文本解析继续验证" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -707,7 +703,7 @@
     <SUITE FILE_PATH="coverage/sqa_chat$html2md.coverage" NAME="html2md Coverage Results" MODIFIED="1687863950032" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$info_extractor.coverage" NAME="info_extractor Coverage Results" MODIFIED="1687859560363" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$html_extractor.coverage" NAME="html_extractor Coverage Results" MODIFIED="1687859657180" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
-    <SUITE FILE_PATH="coverage/sqa_chat$pubmed_regex.coverage" NAME="pubmed_regex Coverage Results" MODIFIED="1687761246582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/sqa_chat$pubmed_regex.coverage" NAME="pubmed_regex Coverage Results" MODIFIED="1687933439753" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/sqa_chat$pubmed_extractor2.coverage" NAME="pubmed_extractor2 Coverage Results" MODIFIED="1687859607367" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$html_clean.coverage" NAME="html_clean Coverage Results" MODIFIED="1687863781420" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$main_remote.coverage" NAME="main remote Coverage Results" MODIFIED="1687162435656" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
