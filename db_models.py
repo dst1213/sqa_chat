@@ -7,7 +7,7 @@ import logging
 
 from sqlalchemy import create_engine, Column, Integer, String, MetaData, Table
 from sqlalchemy.orm import sessionmaker, declarative_base
-from log_tool import slogger
+from log_tools import slogger
 
 
 class MedDataBase:

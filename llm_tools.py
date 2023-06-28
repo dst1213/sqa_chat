@@ -6,7 +6,7 @@ import sqlite3
 
 import requests
 import prompts
-from log_tool import slogger
+from log_tools import slogger
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -60,10 +60,10 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 
 # TODO 16k有很多时候的结果是需要继续的，当前没有做“继续”指令
 # @timeout_and_retry(timeout=BAOSTOCK_TIMEOUT, wait_fixed=BAOSTOCK_WAIT_INTERVAL,stop_max_attempt_number=BAOSTOCK_RETRY,retry_on_exception=BaostockUtils.exception)
-@retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
-       retry_on_exception=BaostockUtils.exception)
+# @retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
+#        retry_on_exception=BaostockUtils.exception)
 # @timeout_decorator.timeout(BAOSTOCK_TIMEOUT,use_signals=False)  # 有问题，signal only works in main thread of the main interpreter
-def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
+def get_openai_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     content = None
     # url = f'{api_host}/chat/completions'
     url = f'{api_host_bak}/chat/completions'
@@ -76,7 +76,7 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
         "temperature": 0,
         "messages": [{"role": "user", "content": real_query}]
     }
-    slogger.info(f"get_data: model:{model}")
+    slogger.info(f"get_openai_data: model:{model}")
     try:
         response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)  # 不然服务器会卡死
         slogger.info(response)
@@ -85,7 +85,7 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
         slogger.info(f"response.status_code:{response.status_code}, response.text:{response.text}")
         if response.status_code == 200:
             if "That model is currently overloaded with other requests" in response.text:
-                slogger.info(f"openai overloaded, get_data retrying:{url}")
+                slogger.info(f"openai overloaded, get_openai_data retrying:{url}")
                 time.sleep(3)
                 response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)
                 slogger.info(response)
@@ -109,7 +109,7 @@ def get_data(query=None, prompt=None, model='gpt-3.5-turbo'):
 @retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
        retry_on_exception=BaostockUtils.exception)
 # @timeout_decorator.timeout(BAOSTOCK_TIMEOUT,use_signals=False)  # 有问题，signal only works in main thread of the main interpreter
-def get_data_davinci(query=None, prompt=None, model='text-davinci-003'):
+def get_openai_data_davinci(query=None, prompt=None, model='text-davinci-003'):
     content = None
     # url = f'{api_host}/chat/completions'
     url = f'{api_host_bak}/completions'
@@ -122,7 +122,7 @@ def get_data_davinci(query=None, prompt=None, model='text-davinci-003'):
         "prompt": real_query,
         "temperature": 0
     }
-    slogger.info(f"get_data: model:{model}")
+    slogger.info(f"get_openai_data: model:{model}")
     try:
         response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)  # 不然服务器会卡死
         slogger.info(response)
@@ -131,7 +131,7 @@ def get_data_davinci(query=None, prompt=None, model='text-davinci-003'):
         slogger.info(f"response.status_code:{response.status_code}, response.text:{response.text}")
         if response.status_code == 200:
             if "That model is currently overloaded with other requests" in response.text:
-                slogger.info(f"openai overloaded, get_data retrying:{url}")
+                slogger.info(f"openai overloaded, get_openai_data retrying:{url}")
                 time.sleep(3)
                 response = requests.post(url, data=json.dumps(data), headers=headers, timeout=300)
                 slogger.info(response)

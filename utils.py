@@ -8,7 +8,7 @@ import re
 import requests
 
 from lxml.html import clean
-from common import *
+from llm_tools import *
 
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
 BAOSTOCK_RETRY = 3  # baostock重试次数,3
@@ -53,7 +53,7 @@ def split_text(text, limit):
     return parts
 
 
-def handle(text,model_type='gpt-3.5-turbo',out_type='json'):
+def llm_handler(text, model_type='gpt-3.5-turbo', out_type='json'):
     # 你的handle函数，这里只是一个示例
     result = {}
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
@@ -62,25 +62,25 @@ def handle(text,model_type='gpt-3.5-turbo',out_type='json'):
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L4
     try:
         if model_type != 'text-davinci-003':
-            result = get_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
+            result = get_openai_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
         else:
-            result = get_data_davinci(text, prompt, model='text-davinci-003')  # gpt-3.5-turbo-16k
+            result = get_openai_data_davinci(text, prompt, model='text-davinci-003')  # gpt-3.5-turbo-16k
         slogger.info(f"result:{result}")
         if out_type == 'json':
             result = json.loads(result)
     except Exception as e:
-        slogger.error(f"handle error:{e}")  # chatgpt返回的json可能格式是错的，要重试
+        slogger.error(f"llm_handler error:{e}")  # chatgpt返回的json可能格式是错的，要重试
         try:
             slogger.error(f"try again......")
             if model_type != 'text-davinci-003':
-                result = get_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
+                result = get_openai_data(text, prompt, model=model_type)  # gpt-3.5-turbo-16k
             else:
-                result = get_data_davinci(text, prompt, model='text-davinci-003')  # gpt-3.5-turbo-16k
+                result = get_openai_data_davinci(text, prompt, model='text-davinci-003')  # gpt-3.5-turbo-16k
             slogger.info(f"result:{result}")
             if out_type == 'json':
                 result = json.loads(result)
         except Exception as e:
-            slogger.error(f"handle error:{e}")
+            slogger.error(f"llm_handler error:{e}")
     return result
 
 
@@ -151,21 +151,26 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
             merged[k] = ','.join([str(x) for x in v]) if isinstance(v, list) else str(v)
     return merged
 
+def llm_text_extractor():
+    pass
 
-def long_text_extractor(text, limit=4000, repeat=0, out_type='json',to_str=True, model_type='gpt-3.5-turbo',url=None):
+def rule_text_extractor():
+    pass
+
+def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
     results = []
     split_parts = split_text(text, limit)
     for i in range(repeat + 1):
         for idx,part in enumerate(split_parts,1):
             slogger.info(f"======================第{idx}/{len(split_parts)}个片段===========================")
             try:
-                result = handle(part,model_type=model_type,out_type=out_type)
+                result = llm_handler(part, model_type=model_type, out_type=out_type)
                 if result:
                     results.append(result)
                 # time.sleep(30)  # cloudflare 504
                 time.sleep(3)  # cloudflare 504
             except Exception as e:
-                slogger.error(f"long_text_extractor error:{e}")
+                slogger.error(f"web_text_extractor error:{e}")
     if out_type == 'json':
         merged = merge_results(results)
         merged['pmid'] = ','.join(get_pubmed_id_link(url=url))

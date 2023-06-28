@@ -11,14 +11,14 @@ from flask import Flask, request, Response, render_template, stream_with_context
 import websockets
 
 import prompts
-from common import get_data, chat_translate
-from db_model import write_doctor_table
+from llm_tools import get_openai_data, chat_translate
+from db_models import write_doctor_table
 from handlers import get_table
-from log_tool import slogger
+from log_tools import slogger
 
 from dotenv import load_dotenv
 
-from utils import long_text_extractor
+from utils import web_text_extractor
 
 load_dotenv()
 
@@ -52,10 +52,10 @@ def html_handler():
 
     # 结构化抽取
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
-    # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
+    # result = get_openai_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
     repeat = 0
     # TODO 等解决了16k的“继续"指令后再改txt为json，txt的多个分块问题多，先截断了
-    result = long_text_extractor(text[:45000], limit=50000, repeat=repeat,out_type='txt',model_type='gpt-3.5-turbo-16k',url=url)  # default repeat=0  # 15000比较好
+    result = web_text_extractor(text[:45000], limit=50000, repeat=repeat, out_type='txt', model_type='gpt-3.5-turbo-16k', url=url)  # default repeat=0  # 15000比较好
     slogger.info(f"repeat:{repeat},result:{result}")
     temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
     slogger.info(f"temp_file_path:{temp_file_path}")
@@ -91,9 +91,9 @@ def text_handler():
 
     # 结构化抽取
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
-    # result = get_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
+    # result = get_openai_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
     repeat = 0
-    result = long_text_extractor(text, limit=2000, repeat=repeat,model_type='gpt-3.5-turbo')
+    result = web_text_extractor(text, limit=2000, repeat=repeat, model_type='gpt-3.5-turbo')
     slogger.info(f"result:{result}")
 
     data = json.loads(result)

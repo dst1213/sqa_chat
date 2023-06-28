@@ -9,8 +9,8 @@ from langchain import OpenAI, SQLDatabase, SQLDatabaseChain
 from langchain.prompts.prompt import PromptTemplate
 
 import prompts
-from common import *
-from log_tool import slogger
+from llm_tools import *
+from log_tools import slogger
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -63,7 +63,7 @@ def get_table(user,table='ct', query=None, lang="简体中文"):
         tables2 = {"all":db_user,'faq':db_faq, 'doctor':db_user,'clinical_trial':db_user}
     if table == 'auto':
         prompt = prompts.INTENT_TO_TABLE_PROMPTS
-        table_name = get_data(query, prompt=prompt,model='gpt-3.5-turbo')
+        table_name = get_openai_data(query, prompt=prompt, model='gpt-3.5-turbo')
         table_name = clean_table_name(table_name)
         slogger.info(f"table_name:{table_name}")
         db = tables2[table_name] if table_name in all_tables else tables2['faq']
@@ -78,4 +78,4 @@ def get_table(user,table='ct', query=None, lang="简体中文"):
 
 def get_sim_query(query, prompt):
     prompt = prompts.SIMILAR_QUESTION_TEMPLATE
-    sim_queris = get_data(query, prompt=prompt)
+    sim_queris = get_openai_data(query, prompt=prompt)
