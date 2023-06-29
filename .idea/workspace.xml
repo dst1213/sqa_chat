@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.7 增加Markdown抽取">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,7 +56,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "true",
     "grid.search.filter.rows": "true",
-    "last_opened_file_path": "D:/vm_share/xinkang_workspace/sqa_chat/docs/verify_truth",
+    "last_opened_file_path": "D:/vm_share/alex_github_workspace/repair_json",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.stylelint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -324,7 +323,8 @@
       <workItem from="1687912827137" duration="24589000" />
       <workItem from="1687961599624" duration="601000" />
       <workItem from="1687995254068" duration="719000" />
-      <workItem from="1687999492036" duration="14193000" />
+      <workItem from="1687999492036" duration="14829000" />
+      <workItem from="1688031724110" duration="1554000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1686537519365</created>
@@ -573,7 +573,14 @@
       <option name="project" value="LOCAL" />
       <updated>1688025782481</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="v0.7 增加Markdown抽取">
+      <created>1688030268344</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1688030268344</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

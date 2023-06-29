@@ -385,6 +385,13 @@ def extract_by_keyword(soup, keyword):
 
 
 def repair_json(data):
+    """
+    更好的工具
+    josdejong/jsonrepair: Repair invalid JSON documents
+    https://github.com/josdejong/jsonrepair
+    :param data:
+    :return:
+    """
     n = 0
     max_retries = 10
     while n < max_retries:
