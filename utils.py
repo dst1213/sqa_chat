@@ -238,6 +238,17 @@ def merge_strategy(llm_results, rule_results, out_type='json', force_json=False)
         slogger.info(f"merged:{merged}")
     return merged
 
+def verify_truth():
+    """
+    微软的论文和代码
+    [2306.00024] Self-Verification Improves Few-Shot Clinical Information Extraction
+    https://arxiv.org/abs/2306.00024
+    microsoft/clinical-self-verification: Self-verification for LLMs.
+    https://github.com/microsoft/clinical-self-verification
+
+    :return:
+    """
+    pass
 
 def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
     # step1: Rule template规则模板抽取
@@ -249,6 +260,8 @@ def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
     # llm_results.extend(_llm_results)
     # step3: 数据融合策略
     merged = merge_strategy(llm_results, rule_results, out_type, force_json=True)
+    # step4: verify_truth
+    verify_truth()
     return merged
 
 

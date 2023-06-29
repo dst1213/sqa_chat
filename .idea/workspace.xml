@@ -4,15 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.7 代码规范化结构拆分">
-      <change afterPath="$PROJECT_DIR$/test/repair_json.py" afterDir="false" />
+    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.7 JSON修复工具">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prompts.py" beforeDir="false" afterPath="$PROJECT_DIR$/prompts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/html2md.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html2md.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/html_clean.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html_clean.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/html_extractor-ok.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html_extractor-ok.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/only_pmid2-ok.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/only_pmid2-ok.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -330,7 +323,7 @@
       <workItem from="1687912827137" duration="24589000" />
       <workItem from="1687961599624" duration="601000" />
       <workItem from="1687995254068" duration="719000" />
-      <workItem from="1687999492036" duration="365000" />
+      <workItem from="1687999492036" duration="2153000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1686537519365</created>
@@ -544,7 +537,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687938042974</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="v0.7 JSON修复工具">
+      <created>1688000023800</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1688000023800</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -572,7 +572,8 @@
     <MESSAGE value="v0.6 URL长文本解析继续验证" />
     <MESSAGE value="v0.7 代码规范化，重命名，结构拆分" />
     <MESSAGE value="v0.7 代码规范化结构拆分" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.7 代码规范化结构拆分" />
+    <MESSAGE value="v0.7 JSON修复工具" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.7 JSON修复工具" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
