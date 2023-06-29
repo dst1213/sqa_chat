@@ -256,6 +256,10 @@ def verify_truth():
     microsoft/clinical-self-verification: Self-verification for LLMs.
     https://github.com/microsoft/clinical-self-verification
 
+    # TODO
+    超长文本如何用ChatGPT校验，token限制，抽样？
+    Evidence也不好弄
+
     """
     pass
 
