@@ -1,5 +1,6 @@
 # coding:utf-8
 import timeout_decorator  # pip install timeout-decorator
+from bs4 import BeautifulSoup
 from retrying import retry
 import warnings
 import platform
@@ -13,11 +14,14 @@ from llm_tools import *
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
 BAOSTOCK_RETRY = 3  # baostock重试次数,3
 BAOSTOCK_WAIT_INTERVAL = 3000  # ms毫秒，wait_fixed 设置失败重试的间隔时间,2000
+
+
 class BaostockUtils:
 
     @staticmethod
     def exception(e):
         return isinstance(e, Exception)
+
 
 # 最终版，超时后自动重试，支持windows（不做超时和重试）和Linux
 def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, retry_on_exception=None,
@@ -40,6 +44,7 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 
     return decorator
 
+
 def split_text(text, limit):
     parts = []
     while len(text) > limit:
@@ -53,12 +58,12 @@ def split_text(text, limit):
     return parts
 
 
-def llm_handler(text, model_type='gpt-3.5-turbo', out_type='json'):
+def llm_handler(text, model_type='gpt-3.5-turbo', out_type='json', prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3):
     # 你的handle函数，这里只是一个示例
     result = {}
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L2
-    prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L3
+    # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L3
     # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L4
     try:
         if model_type != 'text-davinci-003':
@@ -84,7 +89,7 @@ def llm_handler(text, model_type='gpt-3.5-turbo', out_type='json'):
     return result
 
 
-def merge_results(results, to_str=True, synonym=True,nodup=True):
+def merge_results(results, to_str=True, synonym=True, nodup=True):
     field_synonym = {"name": ["姓名", "name"],
                      "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic"],
                      "department": ["科室", "部门", "department"],
@@ -94,20 +99,21 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
                      "email": ["邮箱", "email", "电邮"],
                      "location": ["位置", "地址", "城市", "location", "office location"],
                      "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce"],
-                     "expertise": ["专长：", "擅长", "specialty", "expertise"],
-                     "visit time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
+                     "expertise": ["专长：", "擅长", "specialty", "expertise","interests"],
+                     "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
                      "qualification": ["资格证书", "qualification"],
                      "insurance": ["适用医保", "医疗保险", "医保", "insurance"],
                      "academic": ["学术兼职", "part-time", "academic"],
-                     "work_experience": ["工作经历", "work experience", "career"],
+                     "work_experience": ["工作经历", "work experience", "career", "short bio"],
                      "education": ["学习经历", "学历", "education"],
                      "publications": ["文献著作", "出版", "论文", "publications"],
-                     "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trial"],
-                     "achievement": ["荣誉成就", "honor", "achievement"]}
+                     "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trials"],
+                     "achievement": ["荣誉成就", "honor", "achievement"],
+                     "service_language": ["服务语言", "service language", "language"]}
     merged = {}
     for result in results:
-        slogger.info(f"merge_results result:type:{type(result)}, result:{result}")
-        if result and isinstance(result,dict):
+        slogger.info(f"merge_results total:{len(results)}, result type:{type(result)}, result:{result}")
+        if result and isinstance(result, dict):
             for key, value in result.items():
                 if value:
                     if key.lower() in merged:
@@ -121,8 +127,7 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
                             merged[key.lower()].extend(value)
                         else:
                             merged[key.lower()].append(value)
-
-
+    slogger.info(f"merged result:{merged}")
     if synonym:
         syn_merged = {k: [] for k, v in field_synonym.items()}
         for k, v in merged.items():
@@ -134,10 +139,10 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
         slogger.info(f"synonym merged:{merged}")
 
     if nodup:
-        new_merged={}
-        for k,v in merged.items():
+        new_merged = {}
+        for k, v in merged.items():
             try:
-                new_merged[k] = list(set(merged[k])) if isinstance(merged[k],list) else merged[k]
+                new_merged[k] = list(set(merged[k])) if isinstance(merged[k], list) else merged[k]
             except Exception as e:
                 slogger.error(f"new_merged error:{e}")
                 traceback.print_exc()
@@ -151,14 +156,16 @@ def merge_results(results, to_str=True, synonym=True,nodup=True):
             merged[k] = ','.join([str(x) for x in v]) if isinstance(v, list) else str(v)
     return merged
 
-def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
+
+def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None,
+                       prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3):
     results = []
     split_parts = split_text(text, limit)
     for i in range(repeat + 1):
         for idx, part in enumerate(split_parts, 1):
             slogger.info(f"======================第{idx}/{len(split_parts)}个片段===========================")
             try:
-                result = llm_handler(part, model_type=model_type, out_type=out_type)
+                result = llm_handler(part, model_type=model_type, out_type=out_type, prompt=prompt)
                 if result:
                     results.append(result)
                 # time.sleep(30)  # cloudflare 504
@@ -166,33 +173,86 @@ def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
             except Exception as e:
                 slogger.error(f"llm_text_extractor error:{e}")
     return results
-def rule_text_extractor(url):
-    pmids = get_pubmed_id_link(url=url)
-    return pmids
 
-def merge_strategy(llm_results, rule_results, out_type='json'):
+
+def rule_text_extractor(text, url):
+    # PMID
+    pmids = []
+    _pmids = get_pubmed_id_link(url=url)
+    if _pmids:
+        pmids.extend(_pmids)
+
+    _pmids2 = extract_pubmed_ids(text)
+    if _pmids2:
+        pmids.extend(_pmids2)
+
+    # PMCID
+    pmcids = []
+    _pmcids = extract_pmc_ids(text)
+    if _pmcids:
+        pmcids.extend(_pmcids)
+
+    # Publications
+    publications = []
+    # 用URL获取soup对象
+    soup = get_soup_from_url(url)
+    # 提取关键词信息
+    _pub_keyword = 'publications'
+    _pubs = extract_by_keyword(soup, _pub_keyword)
+    if _pubs:
+        publications.extend(_pubs[_pub_keyword])
+
+    # Clinical trials
+    ct = []
+    # 用URL获取soup对象
+    soup = get_soup_from_url(url)
+    # 提取关键词信息
+    _ct_keyword = 'clinical trials'
+    _ct = extract_by_keyword(soup, _ct_keyword)
+    if _ct:
+        ct.extend(_ct[_ct_keyword])
+
+    return {"pmids": pmids, "pmcids": pmcids, "publications": publications, "clinical_trials": ct}
+
+
+def merge_strategy(llm_results, rule_results, out_type='json', force_json=False):
+    if force_json:
+        slogger.info(f"before repair_json:{llm_results}")
+        llm_results = [repair_json(result) for result in llm_results]
+        slogger.info(f"after repair_json:{llm_results}")
+        out_type = 'json'
     if out_type == 'json':
         merged = merge_results(llm_results)
-        merged['pmid'] = ','.join(rule_results)
+        merged['pmid'] = ','.join(rule_results['pmids'])
+        merged['pmcid'] = ','.join(rule_results['pmcids'])
+        merged['articles'] = ','.join(rule_results['publications'])
+        merged['clinical_trials'] = ','.join(rule_results['clinical_trials'])
         slogger.info(f"merged:{merged}")
     else:
         results = list(set(llm_results))
         merged = '\n'.join(results)
-        merged += '\npmid:' + ','.join(rule_results)
+        merged += '\npmid:' + ','.join(rule_results['pmids'])
+        merged += '\npmcid:' + ','.join(rule_results['pmcids'])
+        merged += '\narticles:' + ','.join(rule_results['publications'])
+        merged += '\nclinical_trials:' + ','.join(rule_results['clinical_trials'])
         slogger.info(f"merged:{merged}")
     return merged
 
+
 def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
-    # step1: 规则模板抽取
-    rule_results = rule_text_extractor(url)
-    # step2: LLM抽取（兜底）
-    llm_results = llm_text_extractor(text,limit,repeat,out_type,to_str,model_type,url)
+    # step1: Rule template规则模板抽取
+    rule_results = rule_text_extractor(text, url)
+    # step2: LLM抽取（兜底），不同的网页可能需要不同的Prompt template模板，甚至需要通用模板+定制模板两轮
+    llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,
+                                     prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
+    # _llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
+    # llm_results.extend(_llm_results)
     # step3: 数据融合策略
-    merged = merge_strategy(llm_results, rule_results, out_type)
+    merged = merge_strategy(llm_results, rule_results, out_type, force_json=True)
     return merged
 
 
-def get_pubmed_id_link(html=None,url=None):
+def get_pubmed_id_link(html=None, url=None):
     # 除了保留的attribute其他的删除
     safe_attrs = frozenset(['controls', 'poster', 'src', 'href', 'alt'])
     # 默认删除script之类的无用标签，若需保留则添加scripts=False
@@ -202,14 +262,14 @@ def get_pubmed_id_link(html=None,url=None):
     html_string = """ ... """  # 这里应该是HTML文本
     # with open("data/Zacny.txt", "r", encoding="utf8") as f:
     #     text = f.read()
-    content=None
+    content = None
     pmids = []
 
     try:
         if url:
             # url = "https://profiles.uchicago.edu/profiles/display/37485"
             # url = "https://www.bcm.edu/people-search/thomas-kosten-24837"
-            response = requests.get(url,verify=False)
+            response = requests.get(url, verify=False)
             # html = response.text
             content = cleaner.clean_html(response.text)
         elif html:
@@ -230,10 +290,113 @@ def get_pubmed_id_link(html=None,url=None):
         slogger.error(f"get_pubmed_id_link error:{e}")
     return pmids
 
+
+def extract_pubmed_ids(text):
+    pattern = r"(?:PubMed (?:PMID): |PMID: |^|PMID:)(\d+)"
+
+    pmids = re.findall(pattern, text)
+    slogger.info(f"extract_pubmed_ids len:{len(pmids)}")
+    return pmids
+
+
+def extract_pmc_ids(text):
+    # pattern = r"(?:PubMed (?:PMID|Central PMCID): |PMID: |^)(\d+)"
+    pattern = r"(?:PubMed (?:Central PMCID): )(PMC\d+)"
+
+    pmcids = re.findall(pattern, text)
+    slogger.info(f"extract_pmc_ids len:{len(pmcids)}")
+    return pmcids
+
+
+def get_soup_from_url(url):
+    # 发送GET请求
+    response = requests.get(url, verify=False)
+
+    # 创建一个BeautifulSoup对象，获取页面正文
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    return soup
+
+
+def extract_by_keyword(soup, keyword):
+    # 创建一个空的字典
+    result = {}
+
+    # 在soup对象中查找关键词
+    tags = soup.find_all(string=lambda text: keyword in text.lower())
+    try:
+        # 根据关键词类型处理
+        if keyword == 'email':
+            result[keyword] = [tag.find_parent('a')['href'] for tag in tags]
+        elif keyword == 'positions':
+            result[keyword] = [tag.text.strip() for tag in tags[0].find_next('dl').find_all('dd')]
+        elif keyword == 'publications':
+            result[keyword] = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
+        elif keyword == 'clinical trials':
+            result[keyword] = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
+        else:
+            print(f"No handler for keyword '{keyword}'")
+    except Exception as e:
+        result[keyword] = []
+        slogger.error(f"extract_by_keyword error:{e}")
+
+    slogger.info(f"extract_by_keyword result: {result}")
+    return result
+
+
+def repair_json(data):
+    n = 0
+    max_retries = 10
+    while n < max_retries:
+        n += 1
+        try:
+            # Try to load the string as a JSON
+            _data = json.loads(data)
+            return _data  # return if it is a valid JSON
+        except json.JSONDecodeError:
+            # If JSON is invalid, find the last valid opening mark and cut the string
+            open_position = max(data.rfind("{"), data.rfind("["), data.rfind('"'))
+            close_position = max(data.rfind("}"), data.rfind("]"), data.rfind('"'))
+
+            # Check for unbalanced quotes
+            quote_count = data.count('"')
+            unbalanced_quotes = quote_count % 2 != 0
+
+            left_bracket_count = data.count("[")
+            right_bracket_count = data.count("]")
+            unbalanced_brackets = left_bracket_count != right_bracket_count
+
+            if open_position > close_position:
+                if unbalanced_quotes and data[open_position] == '"':
+                    # If last opening mark is a quote and quotes are unbalanced, add closing quote
+                    data = data[:open_position + 1] + '"'
+                else:
+                    # If last opening mark is a bracket, remove it
+                    data = data + ']' if data[-1] == '[' else data[:open_position]
+            else:
+                if unbalanced_quotes and data[close_position] == '"':
+                    # If last closing mark is a quote and quotes are unbalanced, remove it
+                    data = data[:close_position]
+                else:
+                    # If last closing mark is a bracket, add corresponding closing bracket
+                    # bracket = "}" if data[close_position] == "]" else "]"
+                    bracket = ""
+                    if (data[close_position] == "]" or data[close_position] == '"') and not unbalanced_brackets:
+                        bracket = "}"
+                    elif unbalanced_brackets:
+                        bracket = "]"
+
+                    data = data[:close_position + 1] + bracket
+
+            # If no valid opening mark found, assume the JSON string is too broken and return an empty dict
+            if open_position == -1 and close_position == -1:
+                return {}
+
+
 if __name__ == "__main__":
     text = "这里是你的长文本"  # 请将此处替换为你的长文本
-    with open("test/data/Zacny.html.txt",'r',encoding='utf8') as f:
+    with open("test/data/Zacny.html.txt", 'r', encoding='utf8') as f:
         text = f.read()
     # get_pubmed_id_link(url="https://profiles.uchicago.edu/profiles/display/37485")
     # get_pubmed_id_link(url="https://sbmi.uth.edu/faculty-and-staff/dean-sittig.htm")
-    get_pubmed_id_link(url="https://www.hopkinsmedicine.org/profiles/details/lisa-cooper") # TUN
+    get_pubmed_id_link(url="https://www.hopkinsmedicine.org/profiles/details/lisa-cooper")  # TUN

@@ -25,7 +25,7 @@ FIELD_EXTRACTOR_TEMPLATE_L2 = """
 
 FIELD_EXTRACTOR_TEMPLATE_L3 = """
     假如你是数据工程师，请把如下文本（context）按照JSON的格式整理给我：
-    参考字段：姓名(同义词：name)，医院机构（同义词：诊所，药厂，公司，hospital， clinic），科室（同义词：部门，department），职务（同义词：职位，position），职称（同义词：title），电话（同义词：contact，phone，mobile），邮箱（同义词：email，电邮），位置（同义词：地址，城市，location, office location），个人介绍（同义词：自我介绍，专家介绍，简介，about me，introduce），专长：（同义词：擅长，specialty，expertise），出诊时间（同义词：出诊信息，visit time，visit hours），资格证书（同义词：qualification），适用医保（同义词：医疗保险，医保，insurance），学术兼职（同义词：part-time，academic），工作经历（同义词：work experience，career），学习经历（同义词：学历，education），文献著作（同义词：出版，论文，publications，pubmed，pmid），临床研究（同义词：研究，Clinical trial），荣誉成就（同义词：honor，achievement），服务语言（同义词：service language，language）\n
+    参考字段：姓名(同义词：name)，医院机构（同义词：诊所，药厂，公司，hospital，clinic），科室（同义词：部门，department），职务（同义词：职位，position），职称（同义词：title），电话（同义词：contact，phone，mobile），邮箱（同义词：email，电邮），位置（同义词：地址，城市，location, office location），个人介绍（同义词：自我介绍，专家介绍，简介，about me，introduce），专长：（同义词：擅长，specialty，expertise, interests），出诊时间（同义词：出诊信息，visit time，visit hours），资格证书（同义词：qualification），适用医保（同义词：医疗保险，医保，insurance），学术兼职（同义词：part-time，academic），工作经历（同义词：work experience，career，short bio），学习经历（同义词：学历，education），文献著作（同义词：出版，论文，publications，pubmed，pmid，pmcid），临床研究（同义词：研究，clinical trials），荣誉成就（同义词：honor，achievement），服务语言（同义词：service language，language），接诊对象（同义词：treats）\n
     JSON的格式：{"xxx":"xxx","xxx_xxx":"xxx"}，JSON的字段层级只能是一级，多个层级用"_"拼接，字段名是字符串类型，字段值用list[]形式放入多个值
     Return only the valid JSON and nothing else:\n
     ----------context:\n

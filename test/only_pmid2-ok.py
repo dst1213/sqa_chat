@@ -7,6 +7,20 @@ def extract_pubmed_ids(text):
     pmids = re.findall(pattern, text)
     return pmids
 
+def extract_pubmed_ids2(text):
+    # pattern = r"(?:PubMed (?:PMID|Central PMCID): |PMID: |^)(\d+)"
+    pattern = r"(?:PubMed (?:PMID): |PMID: |^|PMID:)(\d+)"
+
+    pmids = re.findall(pattern, text)
+    return pmids
+
+def extract_pubmed_ids3(text):
+    # pattern = r"(?:PubMed (?:PMID|Central PMCID): |PMID: |^)(\d+)"
+    pattern = r"(?:PubMed (?:Central PMCID): )(PMC\d+)"
+
+    pmids = re.findall(pattern, text)
+    return pmids
+
 # 示例一
 text1 = """
 HT, Powe NR, Nelson C, Ford DE. Race, gender, and partnership in the patient-physician relationship. JAMA. 1999 Aug 11;282(6):583-9. PubMed PMID: 10450723
@@ -18,6 +32,11 @@ Johnson RL, Roter D, Powe NR, Cooper LA. Patient race/ethnicity and quality of p
 
 pmids1 = extract_pubmed_ids(text1)
 print(pmids1)
+
+pmcids1 = extract_pubmed_ids3(text1)
+print('----------pmc id--------------')
+print(pmcids1)
+print('----------pmc id end--------------')
 
 # 示例二
 text2 = """

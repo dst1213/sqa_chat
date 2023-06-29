@@ -38,6 +38,8 @@ def extract_by_keyword(soup, keyword):
         result[keyword] = [tag.text.strip() for tag in tags[0].find_next('dl').find_all('dd')]
     elif keyword == 'publications':
         result[keyword] = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
+    elif keyword == 'clinical trials':
+        result[keyword] = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
     else:
         print(f"No handler for keyword '{keyword}'")
 
@@ -46,17 +48,19 @@ def extract_by_keyword(soup, keyword):
 
 
 # 用URL获取soup对象
-soup = get_soup_from_url('https://www.bcm.edu/people-search/thomas-kosten-24837')  # ok，隐藏的不行
+# soup = get_soup_from_url('https://www.bcm.edu/people-search/thomas-kosten-24837')  # ok，隐藏的不行
+soup = get_soup_from_url('https://profiles.stanford.edu/john-ioannidis')  # ok，隐藏的不行
 # soup = get_soup_from_url('https://profiles.uchicago.edu/profiles/display/37485') # bad
 # soup = get_soup_from_url('https://support.psyc.vt.edu/users/wkbickel')  # ok
 
 # 提取关键词信息
 result = extract_by_keyword(soup, 'publications')
+# result = extract_by_keyword(soup, 'clinical trials')
 print(result)
 
-# 示例的HTML
-with open("data/clean.txt", "r", encoding='utf8') as f:
-    html = f.read()
+# # 示例的HTML
+# with open("data/clean.txt", "r", encoding='utf8') as f:
+#     html = f.read()
 
 
 # # 输出结果
