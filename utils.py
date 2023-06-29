@@ -1,15 +1,17 @@
 # coding:utf-8
+import markdown
 import timeout_decorator  # pip install timeout-decorator
 from bs4 import BeautifulSoup
 from retrying import retry
 import warnings
 import platform
 import re
-
+import htmlmin
+import html2text
 import requests
-
 from lxml.html import clean
 from llm_tools import *
+from langchain.text_splitter import MarkdownHeaderTextSplitter
 
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
 BAOSTOCK_RETRY = 3  # baostock重试次数,3
@@ -99,7 +101,7 @@ def merge_results(results, to_str=True, synonym=True, nodup=True):
                      "email": ["邮箱", "email", "电邮"],
                      "location": ["位置", "地址", "城市", "location", "office location"],
                      "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce"],
-                     "expertise": ["专长：", "擅长", "specialty", "expertise","interests"],
+                     "expertise": ["专长：", "擅长", "specialty", "expertise", "interests"],
                      "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
                      "qualification": ["资格证书", "qualification"],
                      "insurance": ["适用医保", "医疗保险", "医保", "insurance"],
@@ -215,21 +217,22 @@ def rule_text_extractor(text, url):
     return {"pmids": pmids, "pmcids": pmcids, "publications": publications, "clinical_trials": ct}
 
 
-def merge_strategy(llm_results, rule_results, out_type='json', force_json=False):
+def merge_strategy(llm_results, md_results, rule_results, out_type='json', force_json=False):
     if force_json:
         slogger.info(f"before repair_json:{llm_results}")
         llm_results = [repair_json(result) for result in llm_results]
         slogger.info(f"after repair_json:{llm_results}")
         out_type = 'json'
     if out_type == 'json':
-        merged = merge_results(llm_results)
+        results = llm_results + md_results
+        merged = merge_results(results)
         merged['pmid'] = ','.join(rule_results['pmids'])
         merged['pmcid'] = ','.join(rule_results['pmcids'])
         merged['articles'] = ','.join(rule_results['publications'])
         merged['clinical_trials'] = ','.join(rule_results['clinical_trials'])
         slogger.info(f"merged:{merged}")
     else:
-        results = list(set(llm_results))
+        results = list(set(llm_results + md_results))
         merged = '\n'.join(results)
         merged += '\npmid:' + ','.join(rule_results['pmids'])
         merged += '\npmcid:' + ','.join(rule_results['pmcids'])
@@ -238,9 +241,10 @@ def merge_strategy(llm_results, rule_results, out_type='json', force_json=False)
         slogger.info(f"merged:{merged}")
     return merged
 
+
 def verify_truth():
     """
-    校验：信息丢失、信息冗余（多）、信息不对
+    校验：信息丢失、信息冗余（多）、信息不对、信息错位【A字段填到B字段，可能是A,B字段相似度较高导致】
     步骤：GPT抽取信息（循环5次）-> Omission缺失查找 -> Evidence证据补全（就是抽取的实体附上原文） -> Prune剪枝去掉错误不准确的信息
 
     微软的论文和代码
@@ -249,21 +253,24 @@ def verify_truth():
     microsoft/clinical-self-verification: Self-verification for LLMs.
     https://github.com/microsoft/clinical-self-verification
 
-    :return:
     """
     pass
+
 
 def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
     # step1: Rule template规则模板抽取
     rule_results = rule_text_extractor(text, url)
-    # step2: LLM抽取（兜底），不同的网页可能需要不同的Prompt template模板，甚至需要通用模板+定制模板两轮
+    # step2: Markdown模板匹配
+    keywords = ["bio", "biology", "publications", "clinical trials"]
+    md_results = markdown_text_extractor(url, keywords=keywords)
+    # step3: LLM抽取（兜底），不同的网页可能需要不同的Prompt template模板，甚至需要通用模板+定制模板两轮
     llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,
                                      prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
     # _llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
     # llm_results.extend(_llm_results)
-    # step3: 数据融合策略
-    merged = merge_strategy(llm_results, rule_results, out_type, force_json=True)
-    # step4: verify_truth
+    # step4: 数据融合策略
+    merged = merge_strategy(llm_results, md_results, rule_results, out_type, force_json=True)
+    # step5: verify_truth
     verify_truth()
     return merged
 
@@ -407,6 +414,109 @@ def repair_json(data):
             # If no valid opening mark found, assume the JSON string is too broken and return an empty dict
             if open_position == -1 and close_position == -1:
                 return {}
+
+
+def md2txt(md):
+    html = markdown.markdown(md)
+    soup = BeautifulSoup(html, 'html.parser')
+    txt = soup.get_text()
+    return txt
+
+
+def doc_obj_to_text(doc_obj):
+    txt = md2txt(doc_obj.page_content)
+    slogger.info(f"doc_obj_to_text:{txt}")
+    return txt
+
+
+def md_splitter(txt):
+    md_header_splits = None
+    # markdown template
+    headers_to_split_on = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+        ("####", "Header 4"),
+        ("#####", "Header 5"),
+        ("######", "Header 6"),
+    ]
+    try:
+        markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
+        md_header_splits = markdown_splitter.split_text(txt)
+    except Exception as e:
+        slogger.error(f"html_clean error:{e}")
+    return md_header_splits
+
+
+def html_clean(url=None):
+    content = None
+    try:
+        # 除了保留的attribute其他的删除
+        safe_attrs = frozenset(['controls', 'poster', 'src', 'href', 'alt'])
+        # 默认删除script之类的无用标签，若需保留则添加scripts=False
+        # 默认删除的有<script>, javascript, comments, style, <link>, <meta>等
+        cleaner = clean.Cleaner(safe_attrs_only=True, safe_attrs=safe_attrs)
+
+        # url = "https://support.psyc.vt.edu/users/wkbickel"
+
+        response = requests.get(url, verify=False)
+        content = cleaner.clean_html(response.text)
+
+        content = htmlmin.minify(content, remove_comments=True, remove_all_empty_space=True)
+    except Exception as e:
+        slogger.error(f"html_clean error:{e}")
+    return content
+
+
+def html2md(html_doc):
+    res = None
+    try:
+        res = html2text.html2text(html_doc)
+    except Exception as e:
+        slogger.error(f"html2md error:{e}")
+    return res
+
+
+def markdown_text_extractor(url, keywords):
+    result = []
+    try:
+        html_doc = html_clean(url)
+        md_txt = html2md(html_doc)
+        res = markdown_handler(md_txt, keywords)
+        result.append(res)
+    except Exception as e:
+        slogger.error(f"markdown_text_extractor error:{e}")
+    return result
+
+
+def markdown_handler(md_txt, keywords):
+    """
+    Document(page_content='Dr. Aggarwal is an internationally recognized structural biologist',
+    metadata={'Header 1': 'Business Office', 'Header 2': '__Business Office 1', 'Header 3': 'Biography'})
+    :param md_txt:
+    :return:
+    """
+    if not keywords:
+        return
+    result = {keyword: [] for keyword in keywords}
+    try:
+        ms_doc_objs = md_splitter(md_txt)
+    except Exception as e:
+        slogger.error(f"markdown_text_extractor md_splitter error:{e}")
+        return
+    for doc_obj in ms_doc_objs:
+        try:
+            content = doc_obj.page_content
+            meta = doc_obj.metadata
+            for keyword in keywords:
+                try:
+                    if keyword.lower() in meta.values():
+                        result[keyword].append(content)
+                except Exception as e:
+                    slogger.error(f"markdown_text_extractor keyword error:{e}")
+        except Exception as e:
+            slogger.error(f"markdown_text_extractor doc_obj error:{e}")
+    return result
 
 
 if __name__ == "__main__":
