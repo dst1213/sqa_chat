@@ -240,6 +240,9 @@ def merge_strategy(llm_results, rule_results, out_type='json', force_json=False)
 
 def verify_truth():
     """
+    校验：信息丢失、信息冗余（多）、信息不对
+    步骤：GPT抽取信息（循环5次）-> Omission缺失查找 -> Evidence证据补全（就是抽取的实体附上原文） -> Prune剪枝去掉错误不准确的信息
+
     微软的论文和代码
     [2306.00024] Self-Verification Improves Few-Shot Clinical Information Extraction
     https://arxiv.org/abs/2306.00024
