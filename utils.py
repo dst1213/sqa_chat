@@ -92,6 +92,7 @@ def llm_handler(text, model_type='gpt-3.5-turbo', out_type='json', prompt=prompt
 
 
 def merge_results(results, to_str=True, synonym=True, nodup=True):
+    # 映射关系总表：大于ChatGPT的Prompt，大于产品关键词表，多了网页特有的表述
     field_synonym = {"name": ["姓名", "name"],
                      "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic"],
                      "department": ["科室", "部门", "department"],
@@ -100,7 +101,7 @@ def merge_results(results, to_str=True, synonym=True, nodup=True):
                      "phone": ["电话", "contact", "phone", "mobile"],
                      "email": ["邮箱", "email", "电邮"],
                      "location": ["位置", "地址", "城市", "location", "office location"],
-                     "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce"],
+                     "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce","biology"],
                      "expertise": ["专长：", "擅长", "specialty", "expertise", "interests"],
                      "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
                      "qualification": ["资格证书", "qualification"],
@@ -108,7 +109,7 @@ def merge_results(results, to_str=True, synonym=True, nodup=True):
                      "academic": ["学术兼职", "part-time", "academic"],
                      "work_experience": ["工作经历", "work experience", "career", "short bio"],
                      "education": ["学习经历", "学历", "education"],
-                     "publications": ["文献著作", "出版", "论文", "publications"],
+                     "publications": ["文献著作", "出版", "论文", "publications","abstract","all publications","selected publications"],
                      "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trials"],
                      "achievement": ["荣誉成就", "honor", "achievement"],
                      "service_language": ["服务语言", "service language", "language"]}
@@ -177,10 +178,10 @@ def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
     return results
 
 
-def rule_text_extractor(text, url):
+def rule_text_extractor(text, tag_text,url=None):
     # PMID
     pmids = []
-    _pmids = get_pubmed_id_link(url=url)
+    _pmids = get_pubmed_id_link(html=tag_text)
     if _pmids:
         pmids.extend(_pmids)
 
@@ -197,7 +198,8 @@ def rule_text_extractor(text, url):
     # Publications
     publications = []
     # 用URL获取soup对象
-    soup = get_soup_from_url(url)
+    # soup = get_soup_from_url(url)
+    soup = get_soup_from_text(tag_text)
     # 提取关键词信息
     _pub_keyword = 'publications'
     _pubs = extract_by_keyword(soup, _pub_keyword)
@@ -207,7 +209,8 @@ def rule_text_extractor(text, url):
     # Clinical trials
     ct = []
     # 用URL获取soup对象
-    soup = get_soup_from_url(url)
+    # soup = get_soup_from_url(url)
+    soup = get_soup_from_text(tag_text)
     # 提取关键词信息
     _ct_keyword = 'clinical trials'
     _ct = extract_by_keyword(soup, _ct_keyword)
@@ -257,12 +260,15 @@ def verify_truth():
     pass
 
 
-def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
+def web_text_extractor(text, raw_text=None,limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
+    # step0: 带格式的网页清理
+    tag_text = html_clean(url,raw_text)
+
     # step1: Rule template规则模板抽取
-    rule_results = rule_text_extractor(text, url)
+    rule_results = rule_text_extractor(text, tag_text, url)
     # step2: Markdown模板匹配
-    keywords = ["bio", "biology", "publications", "clinical trials"]
-    md_results = markdown_text_extractor(url, keywords=keywords)
+    keywords = ["bio", "biology", "publications", "clinical trials", "abstract"]
+    md_results = markdown_text_extractor(tag_text,url, keywords=keywords)
     # step3: LLM抽取（兜底），不同的网页可能需要不同的Prompt template模板，甚至需要通用模板+定制模板两轮
     llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,
                                      prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
@@ -270,7 +276,7 @@ def web_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
     # llm_results.extend(_llm_results)
     # step4: 数据融合策略
     merged = merge_strategy(llm_results, md_results, rule_results, out_type, force_json=True)
-    # step5: verify_truth
+    # step5: verify_truth【去重放到merge做，循环ChatGPT要做，校验要做】
     verify_truth()
     return merged
 
@@ -340,6 +346,13 @@ def get_soup_from_url(url):
 
     return soup
 
+def get_soup_from_text(text):
+
+
+    # 创建一个BeautifulSoup对象，获取页面正文
+    soup = BeautifulSoup(text, 'html.parser')
+
+    return soup
 
 def extract_by_keyword(soup, keyword):
     # 创建一个空的字典
@@ -424,8 +437,12 @@ def md2txt(md):
 
 
 def doc_obj_to_text(doc_obj):
-    txt = md2txt(doc_obj.page_content)
-    slogger.info(f"doc_obj_to_text:{txt}")
+    txt = ''
+    try:
+        txt = md2txt(doc_obj["content"]) if isinstance(doc_obj,dict) else md2txt(doc_obj.page_content)
+        slogger.info(f"doc_obj_to_text:{txt}")
+    except Exception as e:
+        slogger.error(f"doc_obj_to_text error:{e}")
     return txt
 
 
@@ -448,7 +465,7 @@ def md_splitter(txt):
     return md_header_splits
 
 
-def html_clean(url=None):
+def html_clean(url=None,raw_text=None):
     content = None
     try:
         # 除了保留的attribute其他的删除
@@ -458,9 +475,12 @@ def html_clean(url=None):
         cleaner = clean.Cleaner(safe_attrs_only=True, safe_attrs=safe_attrs)
 
         # url = "https://support.psyc.vt.edu/users/wkbickel"
-
-        response = requests.get(url, verify=False)
-        content = cleaner.clean_html(response.text)
+        if not raw_text:
+            response = requests.get(url, verify=False)
+            tag_text= response.text
+        else:
+            tag_text = raw_text
+        content = cleaner.clean_html(tag_text)
 
         content = htmlmin.minify(content, remove_comments=True, remove_all_empty_space=True)
     except Exception as e:
@@ -477,13 +497,14 @@ def html2md(html_doc):
     return res
 
 
-def markdown_text_extractor(url, keywords):
+def markdown_text_extractor(html_doc, url, keywords):
     result = []
     try:
-        html_doc = html_clean(url)
+        # html_doc = html_clean(url)
         md_txt = html2md(html_doc)
         res = markdown_handler(md_txt, keywords)
         result.append(res)
+        slogger.info(f"markdown_text_extractor:{result}")
     except Exception as e:
         slogger.error(f"markdown_text_extractor error:{e}")
     return result
@@ -506,11 +527,12 @@ def markdown_handler(md_txt, keywords):
         return
     for doc_obj in ms_doc_objs:
         try:
-            content = doc_obj.page_content
-            meta = doc_obj.metadata
+            content = doc_obj_to_text(doc_obj)
+            meta = doc_obj["metadata"] if isinstance(doc_obj,dict) else doc_obj.metadata   # 218版的Langchain是Document对象page_content
             for keyword in keywords:
                 try:
-                    if keyword.lower() in meta.values():
+                    meta_values = [v.lower() for v in meta.values()]
+                    if keyword.lower() in meta_values:
                         result[keyword].append(content)
                 except Exception as e:
                     slogger.error(f"markdown_text_extractor keyword error:{e}")
