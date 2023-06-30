@@ -14,7 +14,12 @@ https://blog.csdn.net/weixin_43790276/article/details/101944628
 Python 实现的 日志logging 单例_comedate的专栏-CSDN博客
 https://blog.csdn.net/comedate/article/details/109279743
 
+》》》并发日志
+python logging模块“另一个程序正在使用此文件，进程无法访问。”问题解决办法..._weixin_30678821的博客-CSDN博客
+https://blog.csdn.net/weixin_30678821/article/details/100005490
 
+python logging模块的分文件存放详析_python_脚本之家
+https://www.jb51.net/article/255619.htm
 
 》》》logging 中常用的日志处理方法和类
 
@@ -88,6 +93,7 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from threading import Lock
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 
 # 日志级别
 BASE_DIR = os.path.dirname(__file__)
@@ -118,7 +124,16 @@ class LoggerTool:
 
     def _file_logger(self):
         size_rotate_file_handler = RotatingFileHandler(filename=LOG_FILE, maxBytes=LOG_PARAM_MAXBYTES,
-                                                       backupCount=LOG_PARAM_BACKUPCOUNT,encoding='utf8')  # 还是有报错
+                                                       backupCount=LOG_PARAM_BACKUPCOUNT, encoding='utf8')  # 还是有报错
+        size_rotate_file_handler.setFormatter(logging.Formatter(self.formatter))
+        size_rotate_file_handler.setLevel(level=LOG_LEVEL)
+        return size_rotate_file_handler
+
+    def _concurrent_file_logger(self):
+        size_rotate_file_handler = handler = ConcurrentRotatingFileHandler(filename=LOG_FILE,
+                                                                           maxBytes=LOG_PARAM_MAXBYTES,
+                                                                           backupCount=LOG_PARAM_BACKUPCOUNT,
+                                                                           encoding='utf8')
         size_rotate_file_handler.setFormatter(logging.Formatter(self.formatter))
         size_rotate_file_handler.setLevel(level=LOG_LEVEL)
         return size_rotate_file_handler
@@ -146,6 +161,13 @@ class LoggerTool:
         self.mutex.release()
         return self.logger
 
+    def concurrent_size_logger(self):
+        self.mutex.acquire()
+        self.logger.addHandler(self._concurrent_file_logger())
+        self.logger.addHandler(self._console_logger())
+        self.mutex.release()
+        return self.logger
+
     def time_logger(self):
         self.mutex.acquire()
         self.logger.addHandler(self._time_logger())
@@ -157,7 +179,8 @@ class LoggerTool:
 # 使用直接调slogger或者tlogger
 _logger = LoggerTool()
 
-slogger = _logger.size_logger()
+# slogger = _logger.size_logger()
+slogger = _logger.concurrent_size_logger()  # 并发日志
 # tlogger = _logger.time_logger()
 
 if __name__ == "__main__":
