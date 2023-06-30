@@ -179,6 +179,19 @@ def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
 
 
 def rule_text_extractor(text, tag_text,url=None):
+    # phone
+    phones = []
+    _phones = get_phone_from_text(tag_text)
+    if _phones:
+        phones.extend(_phones)
+
+    # email
+    emails = []
+    _emails = get_email_from_text(tag_text)
+    if _emails:
+        emails.extend(_emails)
+
+
     # PMID
     pmids = []
     _pmids = get_pubmed_id_link(html=tag_text)
@@ -217,7 +230,7 @@ def rule_text_extractor(text, tag_text,url=None):
     if _ct:
         ct.extend(_ct[_ct_keyword])
 
-    return {"pmids": pmids, "pmcids": pmcids, "publications": publications, "clinical_trials": ct}
+    return {"phone":phones,"email":emails,"pmids": pmids, "pmcids": pmcids, "publications": publications, "clinical_trials": ct}
 
 
 def merge_strategy(llm_results, md_results, rule_results, out_type='json', force_json=False):
@@ -349,6 +362,21 @@ def get_soup_from_url(url):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     return soup
+
+def get_email_from_text(text):
+    # 提取邮箱
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    emails = re.findall(email_pattern, text)
+    return emails
+
+def get_phone_from_text(text):
+    # 提取电话
+    pattern = r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'
+    matches = re.findall(pattern, text)
+    phones = []
+    for match in matches:
+        phones.append('-'.join(match))
+    return phones
 
 def get_soup_from_text(text):
 
