@@ -18,8 +18,8 @@ cleaner = clean.Cleaner(safe_attrs_only=True, safe_attrs=safe_attrs)
 # url = "https://icahn.mssm.edu/profiles/aneel-k-aggarwal"
 # url = "https://www.pennmedicine.org/providers/profile/corey-langer" # 基本空
 # url = "https://profiles.stanford.edu/john-ioannidis"
-# url = "https://www.hopkinsmedicine.org/profiles/details/lisa-cooper"
-url = "https://www.uchicagomedicine.org/find-a-physician/physician/marina-chiara-garassino#"
+url = "https://www.hopkinsmedicine.org/profiles/details/lisa-cooper"
+# url = "https://www.uchicagomedicine.org/find-a-physician/physician/marina-chiara-garassino#"
 # url = "https://www.bcm.edu/people-search/thomas-kosten-24837"
 # url = "https://profiles.uchicago.edu/profiles/display/37485"
 response = requests.get(url,verify=False)

@@ -12,6 +12,9 @@ import requests
 from lxml.html import clean
 from llm_tools import *
 from langchain.text_splitter import MarkdownHeaderTextSplitter
+from selenium import webdriver
+from playwright.sync_api import Playwright, sync_playwright, expect
+os.environ["PATH"] += os.pathsep + r"C:\Program Files\Google\Chrome\Application"
 
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
 BAOSTOCK_RETRY = 3  # baostock重试次数,3
@@ -198,7 +201,7 @@ def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
     return results
 
 
-def rule_text_extractor(text, tag_text,url=None):
+def rule_text_extractor(text, tag_text,raw_text, url=None):
     # phone
     phones = []
     _phones = get_phone_from_text(tag_text)
@@ -207,7 +210,8 @@ def rule_text_extractor(text, tag_text,url=None):
 
     # email
     emails = []
-    _emails = get_email_from_text(tag_text)
+    # _emails = get_email_from_text(tag_text)  # email可能在tag_text被洗掉了，lisa-cooper
+    _emails = get_email_from_text(raw_text)
     if _emails:
         emails.extend(_emails)
 
@@ -249,8 +253,9 @@ def rule_text_extractor(text, tag_text,url=None):
     _ct = extract_by_keyword(soup, _ct_keyword)
     if _ct:
         ct.extend(_ct[_ct_keyword])
-
-    return {"phone":phones,"email":emails,"pmids": pmids, "pmcids": pmcids, "publications": publications, "clinical_trials": ct}
+    data = {"phone":phones,"email":emails,"pmids": pmids, "pmcids": pmcids, "publications": publications, "clinical_trials": ct}
+    slogger.info(f"rule_text_extractor:{data}")
+    return data
 
 
 def merge_strategy(llm_results, md_results, rule_results, out_type='json', force_json=False):
@@ -260,7 +265,7 @@ def merge_strategy(llm_results, md_results, rule_results, out_type='json', force
         slogger.info(f"after repair_json:{llm_results}")
         out_type = 'json'
     if out_type == 'json':
-        results = llm_results + md_results
+        results = llm_results + md_results + [rule_results]
         merged = merge_results(results)
         merged['pmid'] = ','.join(rule_results['pmids'])
         merged['pmcid'] = ','.join(rule_results['pmcids'])
@@ -268,7 +273,7 @@ def merge_strategy(llm_results, md_results, rule_results, out_type='json', force
         merged['clinical_trials'] = ','.join(rule_results['clinical_trials'])
         slogger.info(f"merged:{merged}")
     else:
-        results = list(set(llm_results + md_results))
+        results = list(set(llm_results + md_results + [rule_results]))
         merged = '\n'.join(results)
         merged += '\npmid:' + ','.join(rule_results['pmids'])
         merged += '\npmcid:' + ','.join(rule_results['pmcids'])
@@ -302,7 +307,7 @@ def web_text_extractor(text, raw_text=None,limit=4000, repeat=0, out_type='json'
     tag_text = html_clean(url,raw_text)
 
     # step1: Rule template规则模板抽取
-    rule_results = rule_text_extractor(text, tag_text, url)
+    rule_results = rule_text_extractor(text, tag_text, raw_text, url)
     # step2: Markdown模板匹配
     # keywords = ["bio", "biology", "publications", "clinical trials", "abstract"]
     keywords = ['Academic Appointments', 'clinical trials', 'Administrative Appointments', 'Areas of Expertise', 'Professional Organizations', 'Professional Activities', 'About', 'Projects', 'bio', 'Contact for Research Inquiries', 'Clinical Trials & Research', 'Board Certifications', 'Clinical Trial Keywords', 'Education & Professional Summary', 'Locations & Patient Information', 'Honors', 'Titles', 'Contact', 'Clinical Trials', 'Current Research and Scholarly Interests', 'Departments / Divisions', 'Centers & Institutes', 'All Publications', 'Specialties', 'Additional Training', 'Education', 'Residencies', 'Selected Publications', 'Advisory Committees', 'Abstract', 'Accepted Insurance', 'publications', 'Expertise', 'Professional Education', 'biology', 'abstract', 'Research Interests', 'BioBackground', 'Degrees', 'Boards', 'Locations', 'Honors & Awards', 'Fellowships', 'Memberships']
@@ -602,11 +607,86 @@ def markdown_handler(md_txt, keywords):
             slogger.error(f"markdown_text_extractor doc_obj error:{e}")
     return result
 
+def get_html(url):
+    response = requests.get(url, verify=False)  # 解决中肿网页Https无法爬取
+    soup = BeautifulSoup(response.content, 'html.parser')
+    # 从HTML中提取出文本内容并去除换行、空格等字符
+    # text = soup.get_text().replace('\n', '').replace('\r', '').replace('\t', '').strip()
+    text = soup.get_text().replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
+    # text = soup.get_text().replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t').strip()
+    # with open("test/data/Zacny.html.txt",'r',encoding='utf8') as f:
+    #     text = f.read()
+    slogger.info(f"type:{type(text)},text:{text}")
+    return soup,text,response.text
+
+def get_html_by_sn(url):
+    # 获取所有展示的文本内容和原始结构
+    # 引入浏览器配置
+    options = webdriver.ChromeOptions()
+    # 设置无头模式
+    options.add_argument('--headless')  # 不打开浏览器
+    # 启动浏览器实例，添加配置信息
+    browser = webdriver.Chrome(options=options)
+    # browser = webdriver.Chrome()
+    browser.get(url)
+    html_text = browser.page_source
+    soup = BeautifulSoup(html_text, 'html.parser')
+    text = soup.get_text()
+    output = ""
+    for t in text.split("\n"):
+        if t.replace(" ", "").replace("\t", "") == "":
+            continue
+        output += t
+        output += "\n"
+    browser.quit()
+    return soup, output, html_text
+
+def playwright_runner(playwright: Playwright, url,name='test') -> None:
+    browser = playwright.chromium.launch(headless=True)  # 无头模式（是否打开浏览器），默认True不打开
+    context = browser.new_context()
+    page = context.new_page()
+    # page.goto("https://www.sysucc.org.cn/linchuangzhuanjia")  # 此时的page.content()就是网页源代码了
+    page.goto(url)  # 此时的page.content()就是网页源代码了
+    # with page.expect_popup() as page1_info:
+    #     page.get_by_role("link", name=name).click()
+    # page1 = page1_info.value
+    # # page1.locator("#block-sysu-cc-content div").filter(has_text="徐瑞华 职务：中山大学肿瘤防治中心主任、医院院长、研究所所长，华南恶性肿瘤防治全国重点实验室主任 职称：教授，博士生导师、结直肠癌内科首席专家 专长 消化道肿瘤").nth(1).click()
+    # text = page1.inner_text('#block-sysu-cc-content div')
+    text = page.content()
+    # with open(f"data/{name}.txt", "w", encoding="utf-8") as f:
+    #     f.write(text)
+    slogger.info(f"playwright_runner:{text}")
+    # page1.close()
+    page.close()
+
+    # ---------------------
+    context.close()
+    browser.close()
+    return text
+
+
+def get_html_by_pw(url):
+    text = None
+    try:
+        # if os.path.isfile(f"{name}.txt"):
+        #     continue
+        with sync_playwright() as playwright:
+            raw_text = playwright_runner(playwright, url)
+        soup = BeautifulSoup(raw_text, 'html.parser')
+        # 从HTML中提取出文本内容并去除换行、空格等字符
+        # text = soup.get_text().replace('\n', '').replace('\r', '').replace('\t', '').strip()
+        text = soup.get_text().replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
+    except Exception as e:
+        slogger.error(f"get_html_by_pw,url:{url}, error:{e}")
+    return soup,text,raw_text
 
 if __name__ == "__main__":
-    text = "这里是你的长文本"  # 请将此处替换为你的长文本
-    with open("test/data/Zacny.html.txt", 'r', encoding='utf8') as f:
-        text = f.read()
-    # get_pubmed_id_link(url="https://profiles.uchicago.edu/profiles/display/37485")
-    # get_pubmed_id_link(url="https://sbmi.uth.edu/faculty-and-staff/dean-sittig.htm")
-    get_pubmed_id_link(url="https://www.hopkinsmedicine.org/profiles/details/lisa-cooper")  # TUN
+    # text = "这里是你的长文本"  # 请将此处替换为你的长文本
+    # with open("test/data/Zacny.html.txt", 'r', encoding='utf8') as f:
+    #     text = f.read()
+    # # get_pubmed_id_link(url="https://profiles.uchicago.edu/profiles/display/37485")
+    # # get_pubmed_id_link(url="https://sbmi.uth.edu/faculty-and-staff/dean-sittig.htm")
+    # get_pubmed_id_link(url="https://www.hopkinsmedicine.org/profiles/details/lisa-cooper")  # TUN
+    url = "https://www.uchicagomedicine.org/find-a-physician/physician/marina-chiara-garassino"
+    soup,text,raw_text = get_html_by_pw(url)
+    slogger.info(f"text:{text}")

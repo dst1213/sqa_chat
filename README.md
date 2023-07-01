@@ -47,3 +47,30 @@ pip install https://files.pythonhosted.org/packages/dc/86/5a2caf55a324cfb7363561
 ### 需求
 - 医生字段信息(1)
 https://www.kdocs.cn/l/crUA7eMgelFB
+
+
+### selenium安装
+```angular2html
+    Pycharm中导入Selenium_pycharm selenium_Deepturn的博客-CSDN博客
+    https://blog.csdn.net/weixin_42098002/article/details/117302738
+
+    Selenium基础篇之不打开浏览器运行
+    https://www.syrr.cn/news/34288.html?action=onClick
+```
+
+### playwright安装
+- playwright和selenium速度差不多，但是都没有requests拿的网页源代码完整，只是有些字段比如email可能只有仿人点击才能拿到
+- playwright安装简单，selenium要安装配置driver（简单网页可以用helium替代selenium），helium自动安装driver。
+
+```angular2html
+    【0基础学爬虫】爬虫基础之自动化工具 Playwright 的使用 - 简书
+    https://www.jianshu.com/p/7abc45515278
+    
+    安装 Playwright 可以直接使用 pip 工具：
+    
+    pip install playwright
+    
+    安装完成后需要进行初始化操作，安装所需的浏览器。
+    
+    playwright install
+```
