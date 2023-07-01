@@ -65,8 +65,8 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 # @timeout_decorator.timeout(BAOSTOCK_TIMEOUT,use_signals=False)  # 有问题，signal only works in main thread of the main interpreter
 def get_openai_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     content = None
-    url = f'{api_host}/chat/completions'
-    # url = f'{api_host_bak}/chat/completions'
+    # url = f'{api_host}/chat/completions'
+    url = f'{api_host_bak}/chat/completions'
     headers = {'Authorization': f'Bearer {api_key}',
                'Content-Type': 'application/json'}
 
