@@ -1,4 +1,7 @@
 # coding:utf-8
+import random
+import tempfile
+
 import markdown
 import timeout_decorator  # pip install timeout-decorator
 from bs4 import BeautifulSoup
@@ -94,7 +97,7 @@ def llm_handler(text, model_type='gpt-3.5-turbo', out_type='json', prompt=prompt
     return result
 
 
-def merge_results(results, to_str=True, synonym=True, nodup=True):
+def merge_results(results, to_str=True, synonym=True, nodup=True, simdup=False):
     # 映射关系总表：大于ChatGPT的Prompt，大于产品关键词表，多了网页特有的表述
     # field_synonym = {"name": ["姓名", "name"],
     #                  "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic"],
@@ -176,6 +179,19 @@ def merge_results(results, to_str=True, synonym=True, nodup=True):
 
         merged = new_merged
         slogger.info(f"nodup merged:{merged}")
+
+    if simdup:
+        new_merged = {}
+        for k, v in merged.items():
+            try:
+                new_merged[k] = remove_duplicates(merged[k]) if isinstance(merged[k], list) else merged[k]
+            except Exception as e:
+                slogger.error(f"simdup new_merged error:{e}")
+                traceback.print_exc()
+                new_merged[k] = merged[k]
+
+        merged = new_merged
+        slogger.info(f"simdup merged:{merged}")
 
     if to_str:
         for k, v in merged.items():
@@ -261,7 +277,8 @@ def rule_text_extractor(text, tag_text,raw_text, url=None):
 def merge_strategy(llm_results, md_results, rule_results, out_type='json', force_json=False):
     if force_json:
         slogger.info(f"before repair_json:{llm_results}")
-        llm_results = [repair_json(result) for result in llm_results]
+        # llm_results = [repair_json(result) for result in llm_results]
+        llm_results = [jsonrepair_by_js(result) for result in llm_results]
         slogger.info(f"after repair_json:{llm_results}")
         out_type = 'json'
     if out_type == 'json':
@@ -439,6 +456,21 @@ def extract_by_keyword(soup, keyword):
     slogger.info(f"extract_by_keyword result: {result}")
     return result
 
+def jsonrepair_by_js(text):
+    res=None
+    try:
+        name = random.randint(1,10000)
+        filename = os.path.join(tempfile.gettempdir(), f"{name}.txt")
+        with open(filename, 'w', encoding='utf8') as temp_file:
+            temp_file.write(text)
+        result = os.popen(f"type {filename} | jsonrepair --overwrite")
+        with open(filename, 'r', encoding='utf8') as temp_file:
+            txt = temp_file.read()
+        res = json.loads(txt)
+    except Exception as e:
+        slogger.error(f"jsonrepair_by_js error:{e}")
+        traceback.print_exc()
+    return res
 
 def repair_json(data):
     """
@@ -640,6 +672,13 @@ def get_html_by_sn(url):
         output += "\n"
     browser.quit()
     return soup, output, html_text
+
+def get_html_by_file(file):
+    with open(file, 'r', encoding='utf8') as f:
+        text = f.read()
+        raw_text = text
+    slogger.info(f"type:{type(text)},text:{text}")
+    return None,text,raw_text
 
 def playwright_runner(playwright: Playwright, url,name='test') -> None:
     browser = playwright.chromium.launch(headless=True)  # 无头模式（是否打开浏览器），默认True不打开

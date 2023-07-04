@@ -1,9 +1,15 @@
+import copy
 import json
 import os
 import time
 import traceback
 import sqlite3
+from functools import reduce
+from typing import List
 
+from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain.embeddings.openai import OpenAIEmbeddings
+from llama_index import LangchainEmbedding, OpenAIEmbedding
 import requests
 import prompts
 from log_tools import slogger
@@ -65,8 +71,8 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 # @timeout_decorator.timeout(BAOSTOCK_TIMEOUT,use_signals=False)  # 有问题，signal only works in main thread of the main interpreter
 def get_openai_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     content = None
-    url = f'{api_host}/chat/completions'
-    # url = f'{api_host_bak}/chat/completions'
+    # url = f'{api_host}/chat/completions'
+    url = f'{api_host_bak}/chat/completions'
     headers = {'Authorization': f'Bearer {api_key}',
                'Content-Type': 'application/json'}
 
@@ -175,3 +181,49 @@ def chat_translate(text, target_lang='English'):
 
     slogger.info(response.text)
     return response.text
+
+
+def get_similarity(text1, text2, local_embedding=True):
+    if local_embedding:
+        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/distiluse-base-multilingual-cased-v2")
+        embed_model = LangchainEmbedding(embeddings)
+    else:
+        # embeddings = OpenAIEmbeddings()
+        embed_model = OpenAIEmbedding()  # embeddings = OpenAIEmbeddings(openai_api_key="xxxxxxx", chunk_size=1500)
+    # text1 = "今天天气不错，出去玩"
+    # text2 = "今天天气很好，不去玩了"
+    t1 = embed_model.get_query_embedding(text1)
+    t2 = embed_model.get_query_embedding(text2)
+    res = embed_model.similarity(t1, t2)
+    return res
+
+
+def remove_duplicates(texts: List[str]) -> List[str]:
+    slogger.info(f"remove_duplicates before:{len(texts)}")
+    # 简单去重
+    texts = list(set(texts))
+    if len(texts) < 2:
+        return texts
+    # 相似度去重
+    threshold = 0.9  # 相似度阈值
+    # 相似且长度最长的留下
+    _texts = copy.deepcopy(texts)
+    for i in range(len(texts)):
+        for j in range(len(texts)):
+            try:
+                if i == j:  # 自己不和自己比
+                    continue
+                score = get_similarity(texts[i], texts[j])
+                if score >= threshold:
+                    # 相似，则留下长的
+                    if len(texts[i]) > len(texts[j]):
+                        _texts.remove(texts[j])
+                        slogger.info(f"remove_duplicates removed:{texts[j]}")
+                    else:
+                        _texts.remove(texts[i])
+                        slogger.info(f"remove_duplicates removed:{texts[i]}")
+            except Exception as e:
+                slogger.error(f"remove_duplicates error:{e}")
+                slogger.info(f"remove_duplicates texts:{_texts}")
+    slogger.info(f"remove_duplicates after:{len(_texts)}")
+    return _texts

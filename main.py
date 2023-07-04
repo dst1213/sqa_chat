@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import random
 import tempfile
 import traceback
 
@@ -18,7 +19,7 @@ from log_tools import slogger
 
 from dotenv import load_dotenv
 
-from utils import web_text_extractor, get_html, get_html_by_sn, get_html_by_pw
+from utils import web_text_extractor, get_html, get_html_by_sn, get_html_by_pw, get_html_by_file
 
 load_dotenv()
 
@@ -41,10 +42,10 @@ def html_handler():
     url = request.form.get("url", "")
     try:
         # 爬虫
-        soup,text,raw_text = get_html(url)  # requests
-        # soup,text,raw_text = get_html_by_sn(url)  # selenium, list-cooper
+        # soup,text,raw_text = get_html(url)  # requests
+        soup,text,raw_text = get_html_by_sn(url)  # selenium, list-cooper
         # soup, text, raw_text = get_html_by_pw(url)  # playwright
-
+        # soup, text, raw_text = get_html_by_file("test/data/ru-en.txt")  # 本地文件
         # 结构化抽取
         # prompt = prompts.FIELD_EXTRACTOR_TEMPLATE_L1
         # result = get_openai_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
@@ -52,7 +53,8 @@ def html_handler():
         # TODO 等解决了16k的“继续"指令后再改txt为json，txt的多个分块问题多，先截断了
         result = web_text_extractor(text[:45000], raw_text=raw_text,limit=50000, repeat=repeat, out_type='txt', model_type='gpt-3.5-turbo-16k', url=url)  # default repeat=0  # 15000比较好
         slogger.info(f"repeat:{repeat},result:{result}")
-        temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}.txt")
+        name_suffix = random.randint(1, 10000)
+        temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}_{name_suffix}.txt")
         slogger.info(f"temp_file_path:{temp_file_path}")
         # 即使抽取失败，不影响索引构建，但是可能影响名片字段的入库 TODO
         with open(temp_file_path, 'w', encoding='utf8') as temp_file:
