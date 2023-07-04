@@ -11,17 +11,19 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 from llama_index import LangchainEmbedding, OpenAIEmbedding
 import requests
+
+import config
 import prompts
 from log_tools import slogger
 from dotenv import load_dotenv
 
 load_dotenv()
 
-api_key = os.environ.get("OPENAI_API_KEY")
-api_host = os.environ.get("OPENAI_API_BASE")
-api_host_bak = os.environ.get("OPENAI_API_BASE_BACKUP")
-api_host_bak2 = os.environ.get("OPENAI_API_BASE_BACKUP2")
-gpt_model = "gpt-3.5-turbo"
+# api_key = os.environ.get("OPENAI_API_KEY")
+# api_host = os.environ.get("OPENAI_API_BASE")
+# api_host_bak = os.environ.get("OPENAI_API_BASE_BACKUP")
+# api_host_bak2 = os.environ.get("OPENAI_API_BASE_BACKUP2")
+# gpt_model = "gpt-3.5-turbo"
 
 import timeout_decorator  # pip install timeout-decorator
 from retrying import retry
@@ -72,8 +74,8 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 def get_openai_data(query=None, prompt=None, model='gpt-3.5-turbo'):
     content = None
     # url = f'{api_host}/chat/completions'
-    url = f'{api_host_bak}/chat/completions'
-    headers = {'Authorization': f'Bearer {api_key}',
+    url = f'{config.OPENAI_API_HOST_USE}/chat/completions'
+    headers = {'Authorization': f'Bearer {config.OPENAI_API_KEY}',
                'Content-Type': 'application/json'}
 
     real_query = prompt.replace("{query_str}", query)
@@ -118,8 +120,8 @@ def get_openai_data(query=None, prompt=None, model='gpt-3.5-turbo'):
 def get_openai_data_davinci(query=None, prompt=None, model='text-davinci-003'):
     content = None
     # url = f'{api_host}/chat/completions'
-    url = f'{api_host_bak}/completions'
-    headers = {'Authorization': f'Bearer {api_key}',
+    url = f'{config.OPENAI_API_HOST_USE}/completions'
+    headers = {'Authorization': f'Bearer {config.OPENAI_API_KEY}',
                'Content-Type': 'application/json'}
 
     real_query = prompt.replace("{query_str}", query)
@@ -161,9 +163,9 @@ def get_openai_data_davinci(query=None, prompt=None, model='text-davinci-003'):
 def chat_translate(text, target_lang='English'):
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}'
+        'Authorization': f'Bearer {config.OPENAI_API_KEY}'
     }
-    url = f"{api_host}/chat/completions"
+    url = f"{config.OPENAI_API_HOST_USE}/chat/completions"
     payload = json.dumps({
         "model": "gpt-3.5-turbo",
         "messages": [{

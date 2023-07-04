@@ -17,6 +17,7 @@ from llm_tools import *
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 from selenium import webdriver
 from playwright.sync_api import Playwright, sync_playwright, expect
+import config
 os.environ["PATH"] += os.pathsep + r"C:\Program Files\Google\Chrome\Application"
 
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
@@ -99,46 +100,7 @@ def llm_handler(text, model_type='gpt-3.5-turbo', out_type='json', prompt=prompt
 
 def merge_results(results, to_str=True, synonym=True, nodup=True, simdup=False):
     # 映射关系总表：大于ChatGPT的Prompt，大于产品关键词表，多了网页特有的表述
-    # field_synonym = {"name": ["姓名", "name"],
-    #                  "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic"],
-    #                  "department": ["科室", "部门", "department"],
-    #                  "position": ["职务", "职位", "position"],
-    #                  "title": ["职称", "title"],
-    #                  "phone": ["电话", "contact", "phone", "mobile"],
-    #                  "email": ["邮箱", "email", "电邮"],
-    #                  "location": ["位置", "地址", "城市", "location", "office location"],
-    #                  "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce","biology"],
-    #                  "expertise": ["专长：", "擅长", "specialty", "expertise", "interests"],
-    #                  "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
-    #                  "qualification": ["资格证书", "qualification"],
-    #                  "insurance": ["适用医保", "医疗保险", "医保", "insurance"],
-    #                  "academic": ["学术兼职", "part-time", "academic"],
-    #                  "work_experience": ["工作经历", "work experience", "career", "short bio"],
-    #                  "education": ["学习经历", "学历", "education"],
-    #                  "publications": ["文献著作", "出版", "论文", "publications","abstract","all publications","selected publications"],
-    #                  "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trials"],
-    #                  "achievement": ["荣誉成就", "honor", "achievement"],
-    #                  "service_language": ["服务语言", "service language", "language"]}
-    field_synonym = {"name": ["姓名", "name"],
-                     "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic","Centers & Institutes"],
-                     "department": ["科室", "部门", "department","Departments / Divisions"],
-                     "position": ["职务", "职位", "position","Academic Appointments","Administrative Appointments"],
-                     "title": ["职称", "title","Titles"],
-                     "phone": ["电话", "contact", "phone", "mobile","Contact for Research Inquiries"],
-                     "email": ["邮箱", "email", "电邮"],
-                     "location": ["位置", "地址", "城市", "location", "office location","Locations","Locations & Patient Information"],
-                     "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce","biology","Bio","Background","About"],
-                     "expertise": ["专长：", "擅长", "specialty", "expertise", "interests","Expertise","Research Interests","Specialties","Areas of Expertise"],
-                     "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
-                     "qualification": ["资格证书", "qualification"],
-                     "insurance": ["适用医保", "医疗保险", "医保", "insurance","Accepted Insurance"],
-                     "academic": ["学术兼职", "part-time", "academic","Boards", "Advisory Committees", "Professional Organizations","Memberships","Professional Activities"],
-                     "work_experience": ["工作经历", "work experience", "career", "short bio"],
-                     "education": ["学习经历", "学历", "education","Professional Education","Education","Degrees","Residencies","Fellowships","Board Certifications","Additional Training","Education & Professional Summary"],
-                     "publications": ["文献著作", "出版", "论文", "publications","abstract","all publications","selected publications"],
-                     "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trials","Current Research and Scholarly Interests","Clinical Trials","Projects","Clinical Trial Keywords","Clinical Trials & Research"],
-                     "achievement": ["荣誉成就", "honor", "achievement","Honors & Awards","Honors"],
-                     "service_language": ["服务语言", "service language", "language"]}
+    field_synonym = config.FIELD_SYNONYM_V2
     merged = {}
     for result in results:
         slogger.info(f"merge_results total:{len(results)}, result type:{type(result)}, result:{result}")
