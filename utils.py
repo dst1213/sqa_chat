@@ -461,12 +461,18 @@ def jsonrepair_by_js(text):
     try:
         name = random.randint(1,10000)
         filename = os.path.join(tempfile.gettempdir(), f"{name}.txt")
+        dest_file = os.path.join(tempfile.gettempdir(), f"{name}_json.txt")
         with open(filename, 'w', encoding='utf8') as temp_file:
             temp_file.write(text)
-        result = os.popen(f"type {filename} | jsonrepair --overwrite")
-        with open(filename, 'r', encoding='utf8') as temp_file:
-            txt = temp_file.read()
-        res = json.loads(txt)
+        status = os.system(f"type {filename} | jsonrepair > {dest_file}")
+        # result = os.popen(f"type {filename} | jsonrepair")
+        # res = result.read()  # gbk问题解决不了
+        # res = json.loads(res.strip())
+        # result = os.popen(f"type {filename} | jsonrepair > {dest_file}")
+        if status == 0:
+            with open(dest_file, 'r', encoding='utf8') as temp_file:
+                txt = temp_file.read()
+            res = json.loads(txt)
     except Exception as e:
         slogger.error(f"jsonrepair_by_js error:{e}")
         traceback.print_exc()
