@@ -71,17 +71,17 @@ def timeout_and_retry(timeout=3, wait_fixed=4000, stop_max_attempt_number=3, ret
 # @retry(wait_fixed=BAOSTOCK_WAIT_INTERVAL, stop_max_attempt_number=BAOSTOCK_RETRY,
 #        retry_on_exception=BaostockUtils.exception)
 # @timeout_decorator.timeout(BAOSTOCK_TIMEOUT,use_signals=False)  # 有问题，signal only works in main thread of the main interpreter
-def get_openai_data(query=None, prompt=None, model='gpt-3.5-turbo'):
+def get_openai_data(query=None, prompt=None, model='gpt-3.5-turbo',temperature=0.0):
     content = None
     # url = f'{api_host}/chat/completions'
     url = f'{config.OPENAI_API_HOST_USE}/chat/completions'
     headers = {'Authorization': f'Bearer {config.OPENAI_API_KEY}',
                'Content-Type': 'application/json'}
 
-    real_query = prompt.replace("{query_str}", query)
+    real_query = prompt.replace("{query_str}", query) if prompt is not None else query
     data = {
         "model": model,
-        "temperature": 0,
+        "temperature": temperature,
         "messages": [{"role": "user", "content": real_query}]
     }
     slogger.info(f"get_openai_data: model:{model}")
@@ -229,3 +229,15 @@ def remove_duplicates(texts: List[str]) -> List[str]:
                 slogger.info(f"remove_duplicates texts:{_texts}")
     slogger.info(f"remove_duplicates after:{len(_texts)}")
     return _texts
+
+# 不靠谱，很多对的也判错了
+def llm_prune(query,bulleted_str):
+    prompt = prompts.PRUNE_PROMPT.replace("{query_str}", query).replace("{bulleted_str}", bulleted_str)
+    res = None
+    try:
+        result = get_openai_data(query=prompt, prompt=None, model='gpt-3.5-turbo-16k',temperature=0.7)
+        result = json.loads(result)
+        res = list(result.keys())
+    except Exception as e:
+        slogger.error(f"llm_prune:{e}")
+    return res

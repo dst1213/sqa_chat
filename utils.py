@@ -201,9 +201,9 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
     # image
     avatars = extract_img(url, soup)
 
-    # phone
+    # phone TODO 不同国家的固化、手机格式不统一，要区分
     phones = []
-    _phones = get_phone_from_text(tag_text)
+    _phones = get_phone_from_text(tag_text,lang)
     if _phones:
         phones.extend(_phones)
 
@@ -332,7 +332,7 @@ def merge_strategy(llm_results, md_results, rule_results, out_type='json', force
     return merged
 
 
-def verify_truth():
+def verify_truth(result_dict,text,add_notice=True):
     """
     校验：信息丢失、信息冗余（多）、信息不对、信息错位【A字段填到B字段，可能是A,B字段相似度较高导致】
     步骤：GPT抽取信息（循环5次）-> Omission缺失查找 -> Evidence证据补全（就是抽取的实体附上原文） -> Prune剪枝去掉错误不准确的信息
@@ -348,7 +348,22 @@ def verify_truth():
     Evidence也不好弄
 
     """
-    pass
+    if not isinstance(result_dict,dict):
+        return
+    fields = config.FIELD_NEED_CHECK
+    res = result_dict
+    notice_suffix = " [NEED_TO_CHECK]"
+    try:
+        new_dict = {k: result_dict[k] for k in fields if k in result_dict and result_dict[k]}  # 空字段不检查
+        slogger.info(f"verify_truth input keys:{list(new_dict.keys())}")
+        wrong_keys = llm_prune(query=text,bulleted_str=str(new_dict))
+        slogger.info(f"verify_truth wrong keys:{wrong_keys}")
+        if add_notice:
+            for k in wrong_keys:
+                res[k] = res[k] + notice_suffix if isinstance(res[k],str) else str(res[k]) + notice_suffix
+    except Exception as e:
+        slogger.error(f"verify_truth error:{e}")
+    return res
 
 
 def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json', to_str=True,
@@ -374,7 +389,7 @@ def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json
     # step4: 数据融合策略
     merged = merge_strategy(llm_results, md_results, rule_results, out_type, force_json=True)
     # step5: verify_truth【去重放到merge做，循环ChatGPT要做，校验要做】
-    verify_truth()
+    # merged = verify_truth(merged,text,add_notice=False)
     return merged
 
 
@@ -452,9 +467,12 @@ def get_email_from_text(text):
     return emails
 
 
-def get_phone_from_text(text):
+def get_phone_from_text(text,lang=None):
     # 提取电话
-    pattern = r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'
+    # pattern = r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'
+    pattern = config.PHONE_LANG_MAPPING.get(lang,None)
+    if not pattern:
+        return []
     matches = re.findall(pattern, text)
     phones = []
     for match in matches:
@@ -854,6 +872,7 @@ def extract_img(url,soup,clean=True):
         except Exception as e:
             slogger.error(f"extract_img url:{url}, error:{e}")
     return img_urls
+
 
 if __name__ == "__main__":
     # text = "这里是你的长文本"  # 请将此处替换为你的长文本

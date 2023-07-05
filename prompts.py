@@ -154,3 +154,38 @@ SIMILAR_QUESTION_TEMPLATE = """
 
 Question:{query_str}
 """
+
+PRUNE_PROMPT = """Return each element in the Potential Doctor resume fields(in "key":"value" of JSON format) list which is not clearly mentioned in Doctor Resume.
+Examples of fields which are not mentioned in Doctor Resume text.
+If no non-verified fields are found, return "None".
+
+Doctor Resume:
+John P.A. Ioannidis
+PROFESSOR OF MEDICINE (STANFORD PREVENTION RESEARCH), OF EPIDEMIOLOGY AND POPULATION HEALTH AND BY COURTESY, OF STATISTICS AND OF BIOMEDICAL DATA SCIENCE
+Medicine - Stanford Prevention Research Center
+Web page: http://web.stanford.edu/people/jioannid
+
+Potential Doctor Resume Fields:
+{
+ "name":"John P.A. Ioannidis",
+ "positions":"PROFESSOR OF MEDICINE (STANFORD PREVENTION RESEARCH), OF EPIDEMIOLOGY AND POPULATION HEALTH AND BY COURTESY, OF STATISTICS AND OF BIOMEDICAL DATA SCIENCE",
+ "department":"Medicine - Stanford Prevention Research Center",
+ "web_page":"http://web.stanford.edu/people/jioannid",
+ "sex":"male",
+ "location":"China"
+}
+
+Not Mentioned Fields:
+{
+ "sex":"male",
+ "location":"China"
+}
+
+Doctor Resume:
+{query_str}
+
+Potential Doctor Resume Fields:
+{bulleted_str}
+
+Not Mentioned Fields:
+-"""

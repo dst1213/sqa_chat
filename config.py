@@ -97,3 +97,7 @@ MARKDOWN_KEYWORDS = ['Academic Appointments', 'clinical trials', 'Administrative
 
 SERVICE_LANGUAGES = {'ru': 'Russian', 'en': 'English', 'zh': 'Chinese', 'fr': 'French', 'nl': 'Dutch', 'kr': 'Korean',
                      'es': 'Spanish'}
+
+FIELD_NEED_CHECK = ['name','phone','education','organization','department','position','title','email','location']
+
+PHONE_LANG_MAPPING = {'en': r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'}
