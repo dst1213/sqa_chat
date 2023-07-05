@@ -18,6 +18,7 @@ from llm_tools import *
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 from selenium import webdriver
 from playwright.sync_api import Playwright, sync_playwright, expect
+from urllib.parse import urljoin
 import config
 
 os.environ["PATH"] += os.pathsep + r"C:\Program Files\Google\Chrome\Application"
@@ -193,6 +194,13 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
             _uses.extend(_uses)
         return _uses
 
+
+    # soup
+    soup = get_soup_from_text(tag_text)
+
+    # image
+    avatars = extract_img(url, soup)
+
     # phone
     phones = []
     _phones = get_phone_from_text(tag_text)
@@ -222,8 +230,6 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
     if _pmcids:
         pmcids.extend(_pmcids)
 
-    # soup
-    soup = get_soup_from_text(tag_text)
 
     # Publications
     # publications = []
@@ -291,7 +297,7 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
     # 汇总
     data = {"phone": phones, "email": emails, "pmids": pmids, "pmcids": pmcids, "publications": publications,
             "clinical_trials": ct, "achievement": achievements, "expertise": expertises, "academic": academics,
-            "work_experience": work_experiences, "education": educations,"service_language":service_lang}
+            "work_experience": work_experiences, "education": educations,"service_language":service_lang, "avatar":avatars}
     slogger.info(f"rule_text_extractor:{data}")
     return data
 
@@ -821,6 +827,33 @@ def get_html_by_pw(url):
         slogger.error(f"get_html_by_pw,url:{url}, error:{e}")
     return soup, text, raw_text
 
+def extract_img(url,soup,clean=True):
+    # url = "https://ziekenhuisamstelland.nl/nl/onze-specialisten/76.html"
+    # response = requests.get(url)
+    # soup = BeautifulSoup(response.text, 'html.parser')
+    img_urls = []
+    excludes = ['logo']
+    def _is_dirty(img_url,excludes):
+        flag = False  # 是否包含排除词
+        for ex in excludes:
+            if ex in img_url:
+                flag = True
+                break
+        return flag
+
+    for img in soup.find_all('img'):
+        try:
+            src = img.get('src')
+            img_url = urljoin(url, src)
+            slogger.info(f"extract_img:{img_url}")
+            if clean:
+                if not _is_dirty(img_url,excludes):
+                    img_urls.append(img_url)
+            else:
+                img_urls.append(img_url)
+        except Exception as e:
+            slogger.error(f"extract_img url:{url}, error:{e}")
+    return img_urls
 
 if __name__ == "__main__":
     # text = "这里是你的长文本"  # 请将此处替换为你的长文本

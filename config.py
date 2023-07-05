@@ -46,7 +46,10 @@ FIELD_SYNONYM_V2 = {"name": ["姓名", "name"],
                                        "Current Research and Scholarly Interests", "Clinical Trials", "Projects",
                                        "Clinical Trial Keywords", "Clinical Trials & Research"],
                     "achievement": ["荣誉成就", "honor", "achievement", "Honors & Awards", "Honors"],
-                    "service_language": ["服务语言", "service language", "language"]}
+                    "service_language": ["服务语言", "service language", "language"],
+                    "avatar": ["头像", "head", "profile"],  # ChatGPT不需要此字段！！！
+                    }
+
 FIELD_SYNONYM_V1 = {"name": ["姓名", "name"],
                     "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic"],
                     "department": ["科室", "部门", "department"],
@@ -81,14 +84,16 @@ TAG_LANG_MAPPING = {
 }
 
 MARKDOWN_KEYWORDS = ['Academic Appointments', 'clinical trials', 'Administrative Appointments', 'Areas of Expertise',
-                'Professional Organizations', 'Professional Activities', 'About', 'Projects', 'bio',
-                'Contact for Research Inquiries', 'Clinical Trials & Research', 'Board Certifications',
-                'Clinical Trial Keywords', 'Education & Professional Summary', 'Locations & Patient Information',
-                'Honors', 'Titles', 'Contact', 'Clinical Trials', 'Current Research and Scholarly Interests',
-                'Departments / Divisions', 'Centers & Institutes', 'All Publications', 'Specialties',
-                'Additional Training', 'Education', 'Residencies', 'Selected Publications', 'Advisory Committees',
-                'Abstract', 'Accepted Insurance', 'publications', 'Expertise', 'Professional Education', 'biology',
-                'abstract', 'Research Interests', 'BioBackground', 'Degrees', 'Boards', 'Locations', 'Honors & Awards',
-                'Fellowships', 'Memberships']
+                     'Professional Organizations', 'Professional Activities', 'About', 'Projects', 'bio',
+                     'Contact for Research Inquiries', 'Clinical Trials & Research', 'Board Certifications',
+                     'Clinical Trial Keywords', 'Education & Professional Summary', 'Locations & Patient Information',
+                     'Honors', 'Titles', 'Contact', 'Clinical Trials', 'Current Research and Scholarly Interests',
+                     'Departments / Divisions', 'Centers & Institutes', 'All Publications', 'Specialties',
+                     'Additional Training', 'Education', 'Residencies', 'Selected Publications', 'Advisory Committees',
+                     'Abstract', 'Accepted Insurance', 'publications', 'Expertise', 'Professional Education', 'biology',
+                     'abstract', 'Research Interests', 'BioBackground', 'Degrees', 'Boards', 'Locations',
+                     'Honors & Awards',
+                     'Fellowships', 'Memberships']
 
-SERVICE_LANGUAGES = {'ru':'Russian','en':'English','zh':'Chinese'}
+SERVICE_LANGUAGES = {'ru': 'Russian', 'en': 'English', 'zh': 'Chinese', 'fr': 'French', 'nl': 'Dutch', 'kr': 'Korean',
+                     'es': 'Spanish'}
