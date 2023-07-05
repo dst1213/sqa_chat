@@ -2,6 +2,7 @@
 import random
 import tempfile
 
+import langid
 import markdown
 import timeout_decorator  # pip install timeout-decorator
 from bs4 import BeautifulSoup
@@ -18,6 +19,7 @@ from langchain.text_splitter import MarkdownHeaderTextSplitter
 from selenium import webdriver
 from playwright.sync_api import Playwright, sync_playwright, expect
 import config
+
 os.environ["PATH"] += os.pathsep + r"C:\Program Files\Google\Chrome\Application"
 
 BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
@@ -123,7 +125,7 @@ def merge_results(results, to_str=True, synonym=True, nodup=True, simdup=False):
         syn_merged = {k: [] for k, v in field_synonym.items()}
         for k, v in merged.items():
             for sk, sv in field_synonym.items():
-                if k.lower() in sv:
+                if k.lower() in sv or k.lower() == sk:
                     syn_merged[sk].extend(v)
                     break
         merged = syn_merged
@@ -179,7 +181,18 @@ def llm_text_extractor(text, limit=4000, repeat=0, out_type='json', to_str=True,
     return results
 
 
-def rule_text_extractor(text, tag_text,raw_text, url=None):
+def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
+    def _extract_by_key_tag(soup, key, lang):
+        _uses = []
+        _use_keyword = key
+        _use_tag_type = config.TAG_LANG_MAPPING[_use_keyword]['tag_type']
+        _default_keywords = config.TAG_LANG_MAPPING[_use_keyword]['en']
+        _use_lang_keywords = config.TAG_LANG_MAPPING[_use_keyword].get(lang, _default_keywords)  # 默认en
+        _uses = extract_by_keywords_tag(soup, _use_keyword, _use_lang_keywords, _use_tag_type)
+        if _uses:
+            _uses.extend(_uses)
+        return _uses
+
     # phone
     phones = []
     _phones = get_phone_from_text(tag_text)
@@ -192,7 +205,6 @@ def rule_text_extractor(text, tag_text,raw_text, url=None):
     _emails = get_email_from_text(raw_text)
     if _emails:
         emails.extend(_emails)
-
 
     # PMID
     pmids = []
@@ -210,30 +222,82 @@ def rule_text_extractor(text, tag_text,raw_text, url=None):
     if _pmcids:
         pmcids.extend(_pmcids)
 
+    # soup
+    soup = get_soup_from_text(tag_text)
+
     # Publications
-    publications = []
+    # publications = []
     # 用URL获取soup对象
     # soup = get_soup_from_url(url)
-    soup = get_soup_from_text(tag_text)
-    # 提取关键词信息
-    _pub_keyword = 'publications'
-    _pubs = extract_by_keyword(soup, _pub_keyword)
-    if _pubs:
-        publications.extend(_pubs[_pub_keyword])
+    # 提取publications信息
+    # _pub_keyword = 'publications'
+    # _pub_tag_type = config.TAG_LANG_MAPPING[_pub_keyword]['tag_type']
+    # _default_keywords = config.TAG_LANG_MAPPING[_pub_keyword]['en']
+    # _pub_lang_keywords = config.TAG_LANG_MAPPING[_pub_keyword].get(lang, _default_keywords)  # 默认en
+    # _pubs = extract_by_keywords_tag(soup, _pub_keyword, _pub_lang_keywords, _pub_tag_type)
+    publications = _extract_by_key_tag(soup, 'publications', lang)
+    # if _pubs:
+    #     publications.extend(_pubs)
 
     # Clinical trials
-    ct = []
+    # ct = []
     # 用URL获取soup对象
     # soup = get_soup_from_url(url)
-    soup = get_soup_from_text(tag_text)
-    # 提取关键词信息
-    _ct_keyword = 'clinical trials'
-    _ct = extract_by_keyword(soup, _ct_keyword)
-    if _ct:
-        ct.extend(_ct[_ct_keyword])
-    data = {"phone":phones,"email":emails,"pmids": pmids, "pmcids": pmcids, "publications": publications, "clinical_trials": ct}
+    # soup = get_soup_from_text(tag_text)
+    # 提取clinical trials信息
+    # _ct_keyword = 'clinical trials'
+    # _ct_tag_type = config.TAG_LANG_MAPPING[_ct_keyword]['tag_type']
+    # _default_keywords = config.TAG_LANG_MAPPING[_ct_keyword]['en']
+    # _ct_lang_keywords = config.TAG_LANG_MAPPING[_ct_keyword].get(lang, _default_keywords)  # 默认en
+    # _cts = extract_by_keywords_tag(soup, _ct_keyword, _ct_lang_keywords, _ct_tag_type)
+    ct = _extract_by_key_tag(soup, 'clinical trials', lang)
+    # if _cts:
+    #     ct.extend(_cts)
+    # _ct_keyword = 'clinical trials'
+    # _ct = extract_by_keyword_tag(soup, _ct_keyword,'li')
+    # if _ct:
+    #     ct.extend(_ct[_ct_keyword])
+
+    # Achievements
+    # achievements = []
+    # 用URL获取soup对象
+    # soup = get_soup_from_url(url)
+    # soup = get_soup_from_text(tag_text)
+    # 提取publications信息
+    # _achieve_keyword = 'achievement'
+    # _achieve_tag_type = config.TAG_LANG_MAPPING[_achieve_keyword]['tag_type']
+    # _default_keywords = config.TAG_LANG_MAPPING[_achieve_keyword]['en']
+    # _achieve_lang_keywords = config.TAG_LANG_MAPPING[_achieve_keyword].get(lang, _default_keywords)  # 默认en
+    # _achieves = extract_by_keywords_tag(soup, _achieve_keyword, _achieve_lang_keywords, _achieve_tag_type)
+    achievements = _extract_by_key_tag(soup, 'achievement', lang)
+    # if _achieves:
+    #     achievements.extend(_achieves)
+
+    # Expertise
+    expertises = _extract_by_key_tag(soup, 'expertise', lang)
+
+    # Academic
+    academics = _extract_by_key_tag(soup, 'academic', lang)
+
+    # Work_experience
+    work_experiences = _extract_by_key_tag(soup, 'work_experience', lang)
+
+    # Education
+    educations = _extract_by_key_tag(soup, 'education', lang)
+
+    # Service language
+    service_lang = [config.SERVICE_LANGUAGES.get(lang,'not provided')]
+
+    # 汇总
+    data = {"phone": phones, "email": emails, "pmids": pmids, "pmcids": pmcids, "publications": publications,
+            "clinical_trials": ct, "achievement": achievements, "expertise": expertises, "academic": academics,
+            "work_experience": work_experiences, "education": educations,"service_language":service_lang}
     slogger.info(f"rule_text_extractor:{data}")
     return data
+
+
+def lang_detect(text):
+    return langid.classify(text)[0]
 
 
 def merge_strategy(llm_results, md_results, rule_results, out_type='json', force_json=False):
@@ -281,16 +345,21 @@ def verify_truth():
     pass
 
 
-def web_text_extractor(text, raw_text=None,limit=4000, repeat=0, out_type='json', to_str=True, model_type='gpt-3.5-turbo', url=None):
+def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json', to_str=True,
+                       model_type='gpt-3.5-turbo', url=None):
     # step0: 带格式的网页清理
-    tag_text = html_clean(url,raw_text)
+    tag_text = html_clean(url, raw_text)
+
+    # 语种检测
+    lang = lang_detect(text[:100])  # 前100个字符
+    slogger.info(f"web_text_extractor language:{lang}")
 
     # step1: Rule template规则模板抽取
-    rule_results = rule_text_extractor(text, tag_text, raw_text, url)
+    rule_results = rule_text_extractor(text, tag_text, raw_text, url, lang)
     # step2: Markdown模板匹配
     # keywords = ["bio", "biology", "publications", "clinical trials", "abstract"]
-    keywords = ['Academic Appointments', 'clinical trials', 'Administrative Appointments', 'Areas of Expertise', 'Professional Organizations', 'Professional Activities', 'About', 'Projects', 'bio', 'Contact for Research Inquiries', 'Clinical Trials & Research', 'Board Certifications', 'Clinical Trial Keywords', 'Education & Professional Summary', 'Locations & Patient Information', 'Honors', 'Titles', 'Contact', 'Clinical Trials', 'Current Research and Scholarly Interests', 'Departments / Divisions', 'Centers & Institutes', 'All Publications', 'Specialties', 'Additional Training', 'Education', 'Residencies', 'Selected Publications', 'Advisory Committees', 'Abstract', 'Accepted Insurance', 'publications', 'Expertise', 'Professional Education', 'biology', 'abstract', 'Research Interests', 'BioBackground', 'Degrees', 'Boards', 'Locations', 'Honors & Awards', 'Fellowships', 'Memberships']
-    md_results = markdown_text_extractor(tag_text,url, keywords=keywords)
+    keywords = config.MARKDOWN_KEYWORDS
+    md_results = markdown_text_extractor(tag_text, url, keywords=keywords)
     # step3: LLM抽取（兜底），不同的网页可能需要不同的Prompt template模板，甚至需要通用模板+定制模板两轮
     llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,
                                      prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
@@ -368,12 +437,14 @@ def get_soup_from_url(url):
 
     return soup
 
+
 def get_email_from_text(text):
     # 提取邮箱
     email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     emails = re.findall(email_pattern, text)
     slogger.info(f"get_email_from_text:{emails}")
     return emails
+
 
 def get_phone_from_text(text):
     # 提取电话
@@ -385,13 +456,13 @@ def get_phone_from_text(text):
     slogger.info(f"get_phone_from_text:{phones}")
     return phones
 
+
 def get_soup_from_text(text):
-
-
     # 创建一个BeautifulSoup对象，获取页面正文
     soup = BeautifulSoup(text, 'html.parser')
 
     return soup
+
 
 def extract_by_keyword(soup, keyword):
     # 创建一个空的字典
@@ -418,10 +489,67 @@ def extract_by_keyword(soup, keyword):
     slogger.info(f"extract_by_keyword result: {result}")
     return result
 
-def jsonrepair_by_js(text):
-    res=None
+
+def extract_by_keywords_tag(soup, key, keywords, tag_type):
+    result = []
+    for keyword in keywords:
+        try:
+            res = extract_by_keyword_tag(soup, keyword, tag_type)
+            if res:
+                result.extend(res[keyword])
+        except Exception as e:
+            slogger.error(f"extract_by_keywords_tag {key}:{keyword} error:{e}")
+    return result
+
+
+def extract_by_keyword_tag(soup, keyword, tag_type):
+    # 创建一个空的字典
+    result = {}
+
+    # 在soup对象中查找关键词
+    tags = soup.find_all(string=lambda text: keyword in text.lower())
     try:
-        name = random.randint(1,10000)
+        # 根据关键词类型处理
+
+        def get_li_data(keyword):
+            res = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
+            return res
+
+        def get_dd_data(keyword):
+            res = result[keyword] = [tag.text.strip() for tag in tags[0].find_next('dl').find_all('dd')]
+            return res
+
+        def get_ap_data(keyword):
+            res = [tag.find_parent('a')['href'] for tag in tags]
+            return res
+
+        def handler(keyword, tag_type):
+            res = None
+            if tag_type == 'ap':
+                res = get_ap_data(keyword)
+            if tag_type == 'dd':
+                res = get_dd_data(keyword)
+            if tag_type == 'li':
+                res = get_li_data(keyword)
+            return res
+
+        # 根据关键词类型处理
+        if tag_type in ['ap', 'dd', 'li']:
+            result[keyword] = handler(keyword, tag_type)
+        else:
+            slogger.error(f"No handler for keyword '{keyword}'")
+    except Exception as e:
+        result[keyword] = []
+        slogger.error(f"extract_by_keyword error:{e}")
+
+    slogger.info(f"extract_by_keyword result: {result}")
+    return result
+
+
+def jsonrepair_by_js(text):
+    res = None
+    try:
+        name = random.randint(1, 10000)
         filename = os.path.join(tempfile.gettempdir(), f"{name}.txt")
         dest_file = os.path.join(tempfile.gettempdir(), f"{name}_json.txt")
         with open(filename, 'w', encoding='utf8') as temp_file:
@@ -439,6 +567,7 @@ def jsonrepair_by_js(text):
         slogger.error(f"jsonrepair_by_js error:{e}")
         traceback.print_exc()
     return res
+
 
 def repair_json(data):
     """
@@ -506,7 +635,7 @@ def md2txt(md):
 def doc_obj_to_text(doc_obj):
     txt = ''
     try:
-        txt = md2txt(doc_obj["content"]) if isinstance(doc_obj,dict) else md2txt(doc_obj.page_content)
+        txt = md2txt(doc_obj["content"]) if isinstance(doc_obj, dict) else md2txt(doc_obj.page_content)
         slogger.info(f"doc_obj_to_text:{txt}")
     except Exception as e:
         slogger.error(f"doc_obj_to_text error:{e}")
@@ -532,7 +661,7 @@ def md_splitter(txt):
     return md_header_splits
 
 
-def html_clean(url=None,raw_text=None):
+def html_clean(url=None, raw_text=None):
     content = None
     try:
         # 除了保留的attribute其他的删除
@@ -544,7 +673,7 @@ def html_clean(url=None,raw_text=None):
         # url = "https://support.psyc.vt.edu/users/wkbickel"
         if not raw_text:
             response = requests.get(url, verify=False)
-            tag_text= response.text
+            tag_text = response.text
         else:
             tag_text = raw_text
         content = cleaner.clean_html(tag_text)
@@ -595,7 +724,8 @@ def markdown_handler(md_txt, keywords):
     for doc_obj in ms_doc_objs:
         try:
             content = doc_obj_to_text(doc_obj)
-            meta = doc_obj["metadata"] if isinstance(doc_obj,dict) else doc_obj.metadata   # 218版的Langchain是Document对象page_content
+            meta = doc_obj["metadata"] if isinstance(doc_obj,
+                                                     dict) else doc_obj.metadata  # 218版的Langchain是Document对象page_content
             for keyword in keywords:
                 try:
                     meta_values = [v.lower() for v in meta.values()]
@@ -607,6 +737,7 @@ def markdown_handler(md_txt, keywords):
             slogger.error(f"markdown_text_extractor doc_obj error:{e}")
     return result
 
+
 def get_html(url):
     response = requests.get(url, verify=False)  # 解决中肿网页Https无法爬取
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -617,7 +748,8 @@ def get_html(url):
     # with open("test/data/Zacny.html.txt",'r',encoding='utf8') as f:
     #     text = f.read()
     slogger.info(f"type:{type(text)},text:{text}")
-    return soup,text,response.text
+    return soup, text, response.text
+
 
 def get_html_by_sn(url):
     # 获取所有展示的文本内容和原始结构
@@ -641,14 +773,16 @@ def get_html_by_sn(url):
     browser.quit()
     return soup, output, html_text
 
+
 def get_html_by_file(file):
     with open(file, 'r', encoding='utf8') as f:
         text = f.read()
         raw_text = text
     slogger.info(f"type:{type(text)},text:{text}")
-    return None,text,raw_text
+    return None, text, raw_text
 
-def playwright_runner(playwright: Playwright, url,name='test') -> None:
+
+def playwright_runner(playwright: Playwright, url, name='test') -> None:
     browser = playwright.chromium.launch(headless=True)  # 无头模式（是否打开浏览器），默认True不打开
     context = browser.new_context()
     page = context.new_page()
@@ -685,7 +819,8 @@ def get_html_by_pw(url):
         text = soup.get_text().replace('\n', ' ').replace('\r', ' ').replace('\t', ' ').strip()
     except Exception as e:
         slogger.error(f"get_html_by_pw,url:{url}, error:{e}")
-    return soup,text,raw_text
+    return soup, text, raw_text
+
 
 if __name__ == "__main__":
     # text = "这里是你的长文本"  # 请将此处替换为你的长文本
@@ -695,5 +830,5 @@ if __name__ == "__main__":
     # # get_pubmed_id_link(url="https://sbmi.uth.edu/faculty-and-staff/dean-sittig.htm")
     # get_pubmed_id_link(url="https://www.hopkinsmedicine.org/profiles/details/lisa-cooper")  # TUN
     url = "https://www.uchicagomedicine.org/find-a-physician/physician/marina-chiara-garassino"
-    soup,text,raw_text = get_html_by_pw(url)
+    soup, text, raw_text = get_html_by_pw(url)
     slogger.info(f"text:{text}")

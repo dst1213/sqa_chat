@@ -18,7 +18,8 @@ cleaner = clean.Cleaner(safe_attrs_only=True, safe_attrs=safe_attrs)
 # url = "https://icahn.mssm.edu/profiles/aneel-k-aggarwal"
 # url = "https://www.pennmedicine.org/providers/profile/corey-langer" # 基本空
 # url = "https://profiles.stanford.edu/john-ioannidis"
-url = "https://www.hopkinsmedicine.org/profiles/details/lisa-cooper"
+# url = "https://www.hopkinsmedicine.org/profiles/details/lisa-cooper"
+url = "http://www.mc.msu.ru/about/doctors/doctor/?ID=404"
 # url = "https://www.uchicagomedicine.org/find-a-physician/physician/marina-chiara-garassino#"
 # url = "https://www.bcm.edu/people-search/thomas-kosten-24837"
 # url = "https://profiles.uchicago.edu/profiles/display/37485"
@@ -28,5 +29,5 @@ content = cleaner.clean_html(response.text)
 import htmlmin
 content = htmlmin.minify(content, remove_comments=True, remove_all_empty_space=True)
 
-with open("data/marina-chiara-garassino_html.txt", "w", encoding="utf8") as f:
+with open("data/Albertovich_html.txt", "w", encoding="utf8") as f:
     f.write(content)

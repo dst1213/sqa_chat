@@ -70,6 +70,7 @@ def html_handler():
         #                    drop_first=True, back_first=True)
     except Exception as e:
         slogger.error(f"html_handler error:{e}")
+        traceback.print_exc()
         return {"status":"failure","data":{}}
     return {"status": "success", "data": data}
 

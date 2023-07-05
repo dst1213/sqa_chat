@@ -38,6 +38,8 @@ def extract_by_keyword(soup, keyword):
         result[keyword] = [tag.text.strip() for tag in tags[0].find_next('dl').find_all('dd')]
     elif keyword == 'publications':
         result[keyword] = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
+    elif keyword == 'достижения':
+        result[keyword] = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
     elif keyword == 'clinical trials':
         result[keyword] = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
     else:
@@ -45,16 +47,52 @@ def extract_by_keyword(soup, keyword):
 
     return result
 
+def extract_by_keyword_tag(soup, keyword,tag_type):
+    # 创建一个空的字典
+    result = {}
 
+    # 在soup对象中查找关键词
+    tags = soup.find_all(string=lambda text: keyword in text.lower())
+
+    def get_li_data(keyword):
+        res = [tag.text.strip() for tag in tags[0].find_next('ul').find_all('li')]
+        return res
+    def get_dd_data(keyword):
+        res = result[keyword] = [tag.text.strip() for tag in tags[0].find_next('dl').find_all('dd')]
+        return res
+
+    def get_ap_data(keyword):
+        res = [tag.find_parent('a')['href'] for tag in tags]
+        return res
+
+    def handler(keyword,tag_type):
+        res=None
+        if tag_type == 'ap':
+            res = get_ap_data(keyword)
+        if tag_type == 'dd':
+            res = get_dd_data(keyword)
+        if tag_type == 'li':
+            res = get_li_data(keyword)
+        return res
+
+    # 根据关键词类型处理
+    if keyword in ['ap','dd','li']:
+        result[keyword] = handler(keyword,tag_type)
+    else:
+        print(f"No handler for keyword '{keyword}'")
+
+    return result
 
 # 用URL获取soup对象
 # soup = get_soup_from_url('https://www.bcm.edu/people-search/thomas-kosten-24837')  # ok，隐藏的不行
-soup = get_soup_from_url('https://profiles.stanford.edu/john-ioannidis')  # ok，隐藏的不行
+# soup = get_soup_from_url('https://profiles.stanford.edu/john-ioannidis')  # ok，隐藏的不行
+soup = get_soup_from_url('http://www.mc.msu.ru/about/doctors/doctor/?ID=404')  # ok，隐藏的不行
 # soup = get_soup_from_url('https://profiles.uchicago.edu/profiles/display/37485') # bad
 # soup = get_soup_from_url('https://support.psyc.vt.edu/users/wkbickel')  # ok
 
 # 提取关键词信息
-result = extract_by_keyword(soup, 'publications')
+# result = extract_by_keyword(soup, 'publications')
+result = extract_by_keyword(soup, 'достижения')
 # result = extract_by_keyword(soup, 'clinical trials')
 print(result)
 
