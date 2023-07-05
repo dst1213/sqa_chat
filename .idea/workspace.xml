@@ -4,13 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.7 增加图片提取规则，服务语言配置其他语种">
-      <change afterPath="$PROJECT_DIR$/test/verify_truth_prune2.ipynb" afterDir="false" />
+    <list default="true" id="c0f5ad2f-3331-4021-95e4-50f8c121da0c" name="Changes" comment="v0.7 增加真实性检验，电话提取按国家区分（不同国家固化、手机格式不一样）">
+      <change afterPath="$PROJECT_DIR$/test/网页表格抽取.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/llm_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/llm_tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prompts.py" beforeDir="false" afterPath="$PROJECT_DIR$/prompts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/verify_truth_prune.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test/verify_truth_prune.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/html2md.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html2md.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/html_clean.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/html_clean.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/语种检测.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/test/语种检测.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -56,28 +56,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "true",
-    "grid.search.filter.rows": "true",
-    "last_opened_file_path": "D:/vm_share/xinkang_workspace/sqa_chat/test",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.stylelint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.stylelint": "",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "File.Encoding",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;grid.search.filter.rows&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/vm_share/xinkang_workspace/sqa_chat/test&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.stylelint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.stylelint&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;File.Encoding&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "sqlite"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;sqlite&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\vm_share\xinkang_workspace\sqa_chat\test" />
@@ -260,9 +260,9 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.html_extractor-ok" />
         <item itemvalue="Python.html2md" />
         <item itemvalue="Python.html_clean" />
+        <item itemvalue="Python.html_extractor-ok" />
         <item itemvalue="Python.utils" />
         <item itemvalue="Python.zhongshan_script3" />
       </list>
@@ -349,7 +349,9 @@
       <workItem from="1688395088452" duration="9000" />
       <workItem from="1688431739050" duration="1191000" />
       <workItem from="1688452910133" duration="16386000" />
-      <workItem from="1688517625139" duration="13501000" />
+      <workItem from="1688517625139" duration="20546000" />
+      <workItem from="1688547862392" duration="1716000" />
+      <workItem from="1688549616628" duration="3386000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1686537519365</created>
@@ -692,7 +694,15 @@
       <option name="project" value="LOCAL" />
       <updated>1688526824671</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="v0.7 增加真实性检验，电话提取按国家区分（不同国家固化、手机格式不一样）">
+      <option name="closed" value="true" />
+      <created>1688540696272</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1688540696272</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -714,7 +724,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
-    <MESSAGE value="v0.2 支持多语种模板" />
     <MESSAGE value="v0.2 支持西班牙语对日志编码修改" />
     <MESSAGE value="v0.2 gpt-3.5-turbo-16k测试" />
     <MESSAGE value="v0.3 sql模型的text，crawl接口改完，db模型写完，增加llm为3.5或者16k的模式" />
@@ -739,7 +748,8 @@
     <MESSAGE value="v0.7 把映射表和openai在llm的配置放到config里边" />
     <MESSAGE value="v0.7 规则匹配增加俄文支持和语种检测" />
     <MESSAGE value="v0.7 增加图片提取规则，服务语言配置其他语种" />
-    <option name="LAST_COMMIT_MESSAGE" value="v0.7 增加图片提取规则，服务语言配置其他语种" />
+    <MESSAGE value="v0.7 增加真实性检验，电话提取按国家区分（不同国家固化、手机格式不一样）" />
+    <option name="LAST_COMMIT_MESSAGE" value="v0.7 增加真实性检验，电话提取按国家区分（不同国家固化、手机格式不一样）" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -821,7 +831,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/test/html_clean.py</url>
-          <line>31</line>
+          <line>32</line>
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -876,7 +886,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>414</line>
+          <line>420</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -891,7 +901,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>378</line>
+          <line>384</line>
           <option name="timeStamp" value="47" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -936,27 +946,27 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>317</line>
+          <line>323</line>
           <option name="timeStamp" value="56" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>389</line>
+          <line>395</line>
           <option name="timeStamp" value="57" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>609</line>
+          <line>615</line>
           <option name="timeStamp" value="58" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>311</line>
+          <line>317</line>
           <option name="timeStamp" value="59" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>586</line>
+          <line>592</line>
           <option name="timeStamp" value="60" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -971,12 +981,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>520</line>
+          <line>526</line>
           <option name="timeStamp" value="63" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>552</line>
+          <line>558</line>
           <option name="timeStamp" value="64" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -991,13 +1001,33 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/llm_tools.py</url>
-          <line>238</line>
+          <line>239</line>
           <option name="timeStamp" value="67" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/utils.py</url>
-          <line>475</line>
+          <line>481</line>
           <option name="timeStamp" value="68" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils.py</url>
+          <line>880</line>
+          <option name="timeStamp" value="69" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils.py</url>
+          <line>669</line>
+          <option name="timeStamp" value="70" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils.py</url>
+          <line>730</line>
+          <option name="timeStamp" value="71" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/utils.py</url>
+          <line>388</line>
+          <option name="timeStamp" value="72" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1006,12 +1036,12 @@
     <SUITE FILE_PATH="coverage/sqa_chat$only_pmid2.coverage" NAME="only_pmid2 Coverage Results" MODIFIED="1687859440342" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$pubmed_extractor2.coverage" NAME="pubmed_extractor2 Coverage Results" MODIFIED="1687859607367" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$utils.coverage" NAME="utils Coverage Results" MODIFIED="1688186381494" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/sqa_chat$html2md.coverage" NAME="html2md Coverage Results" MODIFIED="1688457512100" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
+    <SUITE FILE_PATH="coverage/sqa_chat$html2md.coverage" NAME="html2md Coverage Results" MODIFIED="1688547622831" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$publications_1.coverage" NAME="publications_1 Coverage Results" MODIFIED="1687938190453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$only_pmid2_ok.coverage" NAME="only_pmid2-ok Coverage Results" MODIFIED="1687938650059" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$repair_json.coverage" NAME="repair_json Coverage Results" MODIFIED="1687944578720" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$main_remote.coverage" NAME="main remote Coverage Results" MODIFIED="1688182307282" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/sqa_chat$main_local.coverage" NAME="main local Coverage Results" MODIFIED="1688540255293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/sqa_chat$main_local.coverage" NAME="main local Coverage Results" MODIFIED="1688553409073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/sqa_chat$readable.coverage" NAME="readable Coverage Results" MODIFIED="1687768084617" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$pubmed_extractor.coverage" NAME="pubmed_extractor Coverage Results" MODIFIED="1687760717233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$common.coverage" NAME="common Coverage Results" MODIFIED="1687175009749" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -1025,6 +1055,6 @@
     <SUITE FILE_PATH="coverage/sqa_chat$only_pmid.coverage" NAME="only_pmid Coverage Results" MODIFIED="1687773717941" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$zhongshan_script3.coverage" NAME="zhongshan_script3 Coverage Results" MODIFIED="1688182066000" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
     <SUITE FILE_PATH="coverage/sqa_chat$html_extractor_ok.coverage" NAME="html_extractor-ok Coverage Results" MODIFIED="1688460881366" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
-    <SUITE FILE_PATH="coverage/sqa_chat$html_clean.coverage" NAME="html_clean Coverage Results" MODIFIED="1688457481423" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
+    <SUITE FILE_PATH="coverage/sqa_chat$html_clean.coverage" NAME="html_clean Coverage Results" MODIFIED="1688547587083" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/test" />
   </component>
 </project>

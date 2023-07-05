@@ -73,7 +73,7 @@ FIELD_SYNONYM_V1 = {"name": ["姓名", "name"],
                     "service_language": ["服务语言", "service language", "language"]}
 
 TAG_LANG_MAPPING = {
-    "publications": {'tag_type': 'li', 'zh': ['发表'], 'en': ['publications']},
+    "publications": {'tag_type': 'li', 'zh-cn': ['发表'], 'en': ['publications']},
     "clinical trials": {'tag_type': 'li', 'en': ["clinical trials"]},
     "achievement": {'tag_type': 'li', 'en': ["achievement"], 'ru': ['достижения']},
     "expertise": {'tag_type': 'li', 'en': ["expertise"], 'ru': ['профессиональных']},
@@ -96,7 +96,7 @@ MARKDOWN_KEYWORDS = ['Academic Appointments', 'clinical trials', 'Administrative
                      'Fellowships', 'Memberships']
 
 SERVICE_LANGUAGES = {'ru': 'Russian', 'en': 'English', 'zh': 'Chinese', 'fr': 'French', 'nl': 'Dutch', 'kr': 'Korean',
-                     'es': 'Spanish'}
+                     'es': 'Spanish','he':'Hebrew','ar':'Arabic','zh-cn':'Simplified Chinese','zh-tw':'Traditional Chinese'}
 
 FIELD_NEED_CHECK = ['name','phone','education','organization','department','position','title','email','location']
 

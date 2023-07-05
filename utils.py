@@ -197,9 +197,9 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
 
     # soup
     soup = get_soup_from_text(tag_text)
-
+    raw_soup = get_soup_from_text(raw_text)  # 因为tag_text清洗后，<div>里边的class id都没有了，无法判断参考信息
     # image
-    avatars = extract_img(url, soup)
+    avatars = extract_img(url, raw_soup)
 
     # phone TODO 不同国家的固化、手机格式不统一，要区分
     phones = []
@@ -303,7 +303,13 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
 
 
 def lang_detect(text):
-    return langid.classify(text)[0]
+    lang =  langid.classify(text)[0]
+    if lang == 'zh':
+        if is_zh_tw(text):
+            lang = 'zh-tw'
+        else:
+            lang = 'zh-cn'
+    return lang
 
 
 def merge_strategy(llm_results, md_results, rule_results, out_type='json', force_json=False):
@@ -372,7 +378,7 @@ def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json
     tag_text = html_clean(url, raw_text)
 
     # 语种检测
-    lang = lang_detect(text[:100])  # 前100个字符
+    lang = lang_detect(text[100:200])  # 去掉前100个字符，避免影响
     slogger.info(f"web_text_extractor language:{lang}")
 
     # step1: Rule template规则模板抽取
@@ -850,18 +856,31 @@ def extract_img(url,soup,clean=True):
     # response = requests.get(url)
     # soup = BeautifulSoup(response.text, 'html.parser')
     img_urls = []
-    excludes = ['logo']
+    excludes = ['logo','banner','gif','qrcode']
+    includes = ['personal']
     def _is_dirty(img_url,excludes):
         flag = False  # 是否包含排除词
         for ex in excludes:
-            if ex in img_url:
+            if ex.lower() in img_url.lower():
                 flag = True
                 break
         return flag
 
+    def _is_avatar(imgobj):
+        slogger.info(f"extract_img:{img.parent}")
+        slogger.info(f"extract_img:{img.parent.parent}")
+        parent_str = str(imgobj.parent)
+        parent_parent_str = str(imgobj.parent.parent)
+        for inc in includes:
+            if inc.lower() in parent_str or inc.lower() in parent_parent_str:
+                return True
+        return False
+
     for img in soup.find_all('img'):
         try:
             src = img.get('src')
+            if _is_avatar(img):
+                return [urljoin(url, src)]
             img_url = urljoin(url, src)
             slogger.info(f"extract_img:{img_url}")
             if clean:
@@ -872,6 +891,16 @@ def extract_img(url,soup,clean=True):
         except Exception as e:
             slogger.error(f"extract_img url:{url}, error:{e}")
     return img_urls
+
+# 配合langid是zh时，判断是否是繁体
+def is_zh_tw(text):
+    # 使用正则表达式判断是否存在繁体字
+    if re.search('[\u4e00-\u9fa5]+', text):
+        slogger.info("包含繁体字")
+        return True
+    else:
+        slogger.info("不包含繁体字")
+        return False
 
 
 if __name__ == "__main__":
