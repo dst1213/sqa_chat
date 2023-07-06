@@ -2,6 +2,8 @@
 import random
 import tempfile
 
+import pandas as pd
+from io import StringIO
 import langid
 import markdown
 import timeout_decorator  # pip install timeout-decorator
@@ -114,13 +116,13 @@ def merge_results(results, to_str=True, synonym=True, nodup=True, simdup=False):
                         if isinstance(value, list):
                             merged[key.lower()].extend(value)
                         else:
-                            merged[key.lower()].append(value)
+                            merged[key.lower()].append(str(value))  # 防止value是字典等格式，导致后续报错
                     else:
                         merged[key.lower()] = []
                         if isinstance(value, list):
                             merged[key.lower()].extend(value)
                         else:
-                            merged[key.lower()].append(value)
+                            merged[key.lower()].append(str(value))
     slogger.info(f"merged result:{merged}")
     if synonym:
         syn_merged = {k: [] for k, v in field_synonym.items()}
@@ -194,6 +196,31 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
             _uses.extend(_uses)
         return _uses
 
+    def _extract_by_site_pattern(text,url,keyword):
+        _pub_res = []
+        patterns = config.SITE_PATTERN_MAPPING
+        keys = patterns.keys()
+        pattern = None
+        for site in keys:
+            try:
+                if site.lower() in url:
+                    if keyword in patterns[site]:
+                        pattern = patterns[site][keyword]
+                        break
+            except Exception as e:
+                slogger.error(f"_extract_by_site_pattern, error:{e}")
+        if pattern:
+            matches = re.findall(pattern, text, re.DOTALL)
+            # Remove empty strings and combine the results of the extraction because each match result is a tuple of two elements, one of which is an empty string.
+            papers = [''.join(match).strip() for match in matches if any(match)]
+            for paper in papers:
+                try:
+                    slogger.info(f"_extract_by_site_pattern:{paper}")
+                    _pub_res.append(paper)
+                except Exception as e:
+                    slogger.error(f"_extract_by_site_pattern {paper}, error:{e}")
+        return _pub_res
+
 
     # soup
     soup = get_soup_from_text(tag_text)
@@ -242,6 +269,8 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
     # _pub_lang_keywords = config.TAG_LANG_MAPPING[_pub_keyword].get(lang, _default_keywords)  # 默认en
     # _pubs = extract_by_keywords_tag(soup, _pub_keyword, _pub_lang_keywords, _pub_tag_type)
     publications = _extract_by_key_tag(soup, 'publications', lang)
+    _pubs = _extract_by_site_pattern(text, url, 'publications')
+    publications.extend(_pubs)
     # if _pubs:
     #     publications.extend(_pubs)
 
@@ -378,7 +407,7 @@ def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json
     tag_text = html_clean(url, raw_text)
 
     # 语种检测
-    lang = lang_detect(text[100:200])  # 去掉前100个字符，避免影响
+    lang = lang_detect(text[200:500])  # 去掉前100个字符，避免影响
     slogger.info(f"web_text_extractor language:{lang}")
 
     # step1: Rule template规则模板抽取
@@ -396,6 +425,8 @@ def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json
     merged = merge_strategy(llm_results, md_results, rule_results, out_type, force_json=True)
     # step5: verify_truth【去重放到merge做，循环ChatGPT要做，校验要做】
     # merged = verify_truth(merged,text,add_notice=False)
+    # step6: remove dirty info
+    merged = remove_dirty(merged)
     return merged
 
 
@@ -579,6 +610,11 @@ def extract_by_keyword_tag(soup, keyword, tag_type):
 def jsonrepair_by_js(text):
     res = None
     try:
+        try:
+            res = json.loads(text)
+            return res
+        except Exception as e:
+            slogger.info(f"jsonrepair_by_js start")
         name = random.randint(1, 10000)
         filename = os.path.join(tempfile.gettempdir(), f"{name}.txt")
         dest_file = os.path.join(tempfile.gettempdir(), f"{name}_json.txt")
@@ -592,7 +628,11 @@ def jsonrepair_by_js(text):
         if status == 0:
             with open(dest_file, 'r', encoding='utf8') as temp_file:
                 txt = temp_file.read()
-            res = json.loads(txt)
+            try:
+                res = json.loads(txt)
+            except Exception as e:
+                slogger.error(f"jsonrepair_by_js restart")
+                res = repair_json(text)
     except Exception as e:
         slogger.error(f"jsonrepair_by_js error:{e}")
         traceback.print_exc()
@@ -662,11 +702,19 @@ def md2txt(md):
     return txt
 
 
-def doc_obj_to_text(doc_obj):
+def doc_obj_to_text(doc_obj,use_table=True):
     txt = ''
     try:
         txt = md2txt(doc_obj["content"]) if isinstance(doc_obj, dict) else md2txt(doc_obj.page_content)
         slogger.info(f"doc_obj_to_text:{txt}")
+        if use_table:
+            table_str = markdown_table_extractor(txt)
+            if table_str:
+                slogger.info(f"doc_obj_to_text table:{table_str}, meta:{doc_obj.metadata}")
+                res = table_str #markdown_table_converter(table_str) # shin-jung-cheng会丢失数据
+                slogger.info(f"doc_obj_to_text table conv:{res}")
+                if res and isinstance(res,list):
+                    txt = ','.join(res)
     except Exception as e:
         slogger.error(f"doc_obj_to_text error:{e}")
     return txt
@@ -735,6 +783,36 @@ def markdown_text_extractor(html_doc, url, keywords):
         slogger.error(f"markdown_text_extractor error:{e}")
     return result
 
+
+def markdown_table_extractor(md_text):
+    # Regular expression pattern for a Markdown table
+    pattern = r"((?:.*\|.*\n)+)"
+
+    # Use re.findall to find all Markdown tables
+    tables = re.findall(pattern, md_text)
+
+    # Print each table
+    table_str = ""
+    for table in tables:
+        slogger.info(f"markdown_table_extractor:{table.strip()}")
+        table_str += table.strip().replace('-','').replace('|','')
+
+    return table_str
+
+def markdown_table_converter(markdown_table):
+    # 使用read_csv函数将Markdown表格转换为DataFrame
+    # 使用strip()方法去掉前后的空格
+    df = pd.read_csv(StringIO(markdown_table.strip()), sep='|')
+
+    # 由于Markdown表格的格式问题，可能会出现列名和数据前后都有空格的情况，这里做一下处理
+    df.columns = df.columns.str.strip()
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+    # res = ['-'.join(x) for x in df.to_records(index=False)]  # 有些会报错
+    res = [str(x) for x in df.to_records(index=False)]
+    # 输出DataFrame
+    slogger.info(f"markdown_table_converter:{df}")
+    return res
 
 def markdown_handler(md_txt, keywords):
     """
@@ -857,7 +935,7 @@ def extract_img(url,soup,clean=True):
     # soup = BeautifulSoup(response.text, 'html.parser')
     img_urls = []
     excludes = ['logo','banner','gif','qrcode']
-    includes = ['personal']
+    includes = ['personal','title']
     def _is_dirty(img_url,excludes):
         flag = False  # 是否包含排除词
         for ex in excludes:
@@ -896,12 +974,34 @@ def extract_img(url,soup,clean=True):
 def is_zh_tw(text):
     # 使用正则表达式判断是否存在繁体字
     if re.search('[\u4e00-\u9fa5]+', text):
-        slogger.info("包含繁体字")
+        slogger.info(f"包含繁体字:{text}")
         return True
     else:
-        slogger.info("不包含繁体字")
+        slogger.info(f"不包含繁体字:{text}")
         return False
 
+def is_dirty(key,text):
+    dirty_words = config.REMOVE_INFO
+    must_symbols = config.MUST_SYMBOLS
+    for w in dirty_words:
+        if w.lower() in text:
+            return True
+        if key in must_symbols and not must_symbols[key] in text:
+            return True
+    return False
+
+
+def remove_dirty(dict_obj):
+    if not isinstance(dict_obj,dict):
+        return
+    for k,v in dict_obj.items():
+        try:
+            if is_dirty(k,v):
+                dict_obj[k]=''
+                slogger.info(f"remove_dirty:{v}")
+        except Exception as e:
+            slogger.error(f"remove_dirty {e}")
+    return dict_obj
 
 if __name__ == "__main__":
     # text = "这里是你的长文本"  # 请将此处替换为你的长文本

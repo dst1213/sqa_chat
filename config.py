@@ -58,14 +58,14 @@ FIELD_SYNONYM_V1 = {"name": ["姓名", "name"],
                     "phone": ["电话", "contact", "phone", "mobile"],
                     "email": ["邮箱", "email", "电邮"],
                     "location": ["位置", "地址", "城市", "location", "office location"],
-                    "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce", "biology"],
+                    "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce", "biology",'基本資料'],
                     "expertise": ["专长：", "擅长", "specialty", "expertise", "interests"],
                     "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
                     "qualification": ["资格证书", "qualification"],
                     "insurance": ["适用医保", "医疗保险", "医保", "insurance"],
                     "academic": ["学术兼职", "part-time", "academic"],
-                    "work_experience": ["工作经历", "work experience", "career", "short bio"],
-                    "education": ["学习经历", "学历", "education"],
+                    "work_experience": ["工作经历", "work experience", "career", "short bio",'現職'],
+                    "education": ["学习经历", "学历", "education",'學歷'],
                     "publications": ["文献著作", "出版", "论文", "publications", "abstract", "all publications",
                                      "selected publications"],
                     "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trials"],
@@ -93,7 +93,7 @@ MARKDOWN_KEYWORDS = ['Academic Appointments', 'clinical trials', 'Administrative
                      'Abstract', 'Accepted Insurance', 'publications', 'Expertise', 'Professional Education', 'biology',
                      'abstract', 'Research Interests', 'BioBackground', 'Degrees', 'Boards', 'Locations',
                      'Honors & Awards',
-                     'Fellowships', 'Memberships']
+                     'Fellowships', 'Memberships','學歷','基本資料','現職']
 
 SERVICE_LANGUAGES = {'ru': 'Russian', 'en': 'English', 'zh': 'Chinese', 'fr': 'French', 'nl': 'Dutch', 'kr': 'Korean',
                      'es': 'Spanish','he':'Hebrew','ar':'Arabic','zh-cn':'Simplified Chinese','zh-tw':'Traditional Chinese'}
@@ -101,3 +101,9 @@ SERVICE_LANGUAGES = {'ru': 'Russian', 'en': 'English', 'zh': 'Chinese', 'fr': 'F
 FIELD_NEED_CHECK = ['name','phone','education','organization','department','position','title','email','location']
 
 PHONE_LANG_MAPPING = {'en': r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'}
+
+REMOVE_INFO = ['版權','copyright','瀏覽統計']
+
+SITE_PATTERN_MAPPING = {'sysucc':{'publications':r'\d+\.[\s\S]*?(?=\d+\.|$)|\[\d+\][\s\S]*?(?=\[\d+\]|$)|\d+．[\s\S]*?(?=\d+．|$)'}}
+
+MUST_SYMBOLS = {'email':'@'}
