@@ -11,6 +11,7 @@ import requests
 from flask import Flask, request, Response, render_template, stream_with_context, jsonify
 import websockets
 
+import config
 import prompts
 from llm_tools import get_openai_data, chat_translate
 from db_models import write_doctor_table
@@ -19,11 +20,14 @@ from log_tools import slogger
 
 from dotenv import load_dotenv
 
+from nb_classifier import NBPredictor
 from utils import web_text_extractor, get_html, get_html_by_sn, get_html_by_pw, get_html_by_file
 
 load_dotenv()
 
 app = Flask(__name__)
+
+
 
 
 @app.route('/')

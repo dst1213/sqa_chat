@@ -22,6 +22,7 @@ from selenium import webdriver
 from playwright.sync_api import Playwright, sync_playwright, expect
 from urllib.parse import urljoin
 import config
+from nb_classifier import NBPredictor
 
 os.environ["PATH"] += os.pathsep + r"C:\Program Files\Google\Chrome\Application"
 
@@ -29,6 +30,17 @@ BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
 BAOSTOCK_RETRY = 3  # baostock重试次数,3
 BAOSTOCK_WAIT_INTERVAL = 3000  # ms毫秒，wait_fixed 设置失败重试的间隔时间,2000
 
+
+# init
+
+# 预测
+model_file = config.MODEL_FILE
+vectorizer_file = config.VECTORIZER_FILE
+nb_predictor = NBPredictor(model_file, vectorizer_file)
+
+text = "Today's research for tomorrow's cure"
+prediction = nb_predictor.predict_spam(text)
+print(prediction)
 
 class BaostockUtils:
 
@@ -415,7 +427,7 @@ def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json
     # step2: Markdown模板匹配
     # keywords = ["bio", "biology", "publications", "clinical trials", "abstract"]
     keywords = config.MARKDOWN_KEYWORDS
-    md_results = markdown_text_extractor(tag_text, url, keywords=keywords)
+    md_results = markdown_text_extractor(tag_text, url, keywords=keywords,lang=lang)
     # step3: LLM抽取（兜底），不同的网页可能需要不同的Prompt template模板，甚至需要通用模板+定制模板两轮
     llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,
                                      prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
@@ -511,9 +523,10 @@ def get_phone_from_text(text,lang=None):
     if not pattern:
         return []
     matches = re.findall(pattern, text)
-    phones = []
-    for match in matches:
-        phones.append('-'.join(match))
+    # phones = []
+    # for match in matches:
+    #     phones.append('-'.join(match))
+    phones = matches
     slogger.info(f"get_phone_from_text:{phones}")
     return phones
 
@@ -771,12 +784,14 @@ def html2md(html_doc):
     return res
 
 
-def markdown_text_extractor(html_doc, url, keywords):
+def markdown_text_extractor(html_doc, url, keywords,lang):
     result = []
     try:
         # html_doc = html_clean(url)
         md_txt = html2md(html_doc)
-        res = markdown_handler(md_txt, keywords)
+        use_table = config.EXTRACT_MARKDOWN_TABLE.get(lang,False)  # 打开的话，Markdown解析很多都有问题
+        slogger.info(f"markdown_text_extractor use_table:{use_table}")
+        res = markdown_handler(md_txt, keywords,use_table=use_table)
         result.append(res)
         slogger.info(f"markdown_text_extractor:{result}")
     except Exception as e:
@@ -814,7 +829,7 @@ def markdown_table_converter(markdown_table):
     slogger.info(f"markdown_table_converter:{df}")
     return res
 
-def markdown_handler(md_txt, keywords):
+def markdown_handler(md_txt, keywords,use_table=False):
     """
     Document(page_content='Dr. Aggarwal is an internationally recognized structural biologist',
     metadata={'Header 1': 'Business Office', 'Header 2': '__Business Office 1', 'Header 3': 'Biography'})
@@ -831,7 +846,7 @@ def markdown_handler(md_txt, keywords):
         return
     for doc_obj in ms_doc_objs:
         try:
-            content = doc_obj_to_text(doc_obj)
+            content = doc_obj_to_text(doc_obj,use_table=use_table)
             meta = doc_obj["metadata"] if isinstance(doc_obj,
                                                      dict) else doc_obj.metadata  # 218版的Langchain是Document对象page_content
             for keyword in keywords:
@@ -985,8 +1000,14 @@ def is_dirty(key,text):
     must_symbols = config.MUST_SYMBOLS
     for w in dirty_words:
         if w.lower() in text:
+            slogger.info(f"is_dirty dirty_words:{w.lower()}")
             return True
-        if key in must_symbols and not must_symbols[key] in text:
+        # 注意：要选定字段，不要所有字段都用nb，短字段没有训练数据，非常容易误判！！！
+        if key.lower() in config.DIRTY_FIELDS and not nb_predictor.predict_spam(text):
+            slogger.info(f"is_dirty predict_spam:{text}")
+            return True
+        if key.lower() in must_symbols and not must_symbols[key] in text:
+            slogger.info(f"is_dirty must_symbols:{key}")
             return True
     return False
 

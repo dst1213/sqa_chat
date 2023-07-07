@@ -16,6 +16,16 @@ OPENAI_API_HOST_BAK2 = os.environ.get("OPENAI_API_BASE_BACKUP2")
 OPENAI_GPT_MODEL = "gpt-3.5-turbo"
 OPENAI_API_HOST_USE = OPENAI_API_HOST_BAK
 
+# NB分类器配置
+POS_FILE = r"data/nb_pos.txt"
+NEG_FILE = r"data/nb_neg.txt"
+MODEL_FILE = r"data/nb_clf.pkl"
+VECTORIZER_FILE = r"data/nb_vec.pkl"
+DIRTY_FIELDS = ['work_experience','education','articles','introduce','publications','academic','expertise']
+
+# 表格解析
+EXTRACT_MARKDOWN_TABLE = {'en':False,'jp':True,'zh-tw':True}
+
 # 抽取字段的映射
 FIELD_SYNONYM_V2 = {"name": ["姓名", "name"],
                     "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic", "Centers & Institutes"],
@@ -100,7 +110,7 @@ SERVICE_LANGUAGES = {'ru': 'Russian', 'en': 'English', 'zh': 'Chinese', 'fr': 'F
 
 FIELD_NEED_CHECK = ['name','phone','education','organization','department','position','title','email','location']
 
-PHONE_LANG_MAPPING = {'en': r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'}
+PHONE_LANG_MAPPING = {'en':r'\b\d{3}-\d{3}-\d{4}\b'}#{'en': r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'}
 
 REMOVE_INFO = ['版權','copyright','瀏覽統計']
 
