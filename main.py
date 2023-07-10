@@ -46,8 +46,8 @@ def html_handler():
     url = request.form.get("url", "")
     try:
         # 爬虫
-        # soup,text,raw_text = get_html(url)  # requests
-        soup,text,raw_text = get_html_by_sn(url)  # selenium, list-cooper
+        soup,text,raw_text = get_html(url)  # requests
+        # soup,text,raw_text = get_html_by_sn(url)  # selenium, list-cooper
         # soup, text, raw_text = get_html_by_pw(url)  # playwright
         # soup, text, raw_text = get_html_by_file("test/data/SHIH-JUNG-CHENG_html.txt")  # 本地文件
         # 结构化抽取

@@ -954,7 +954,8 @@ def extract_img(url,soup,clean=True):
     def _is_dirty(img_url,excludes):
         flag = False  # 是否包含排除词
         for ex in excludes:
-            if ex.lower() in img_url.lower():
+            url_end = img_url.lower().split('/')[-2:]
+            if ex.lower() in url_end:
                 flag = True
                 break
         return flag
