@@ -68,10 +68,10 @@ def html_handler():
                 temp_file.write(str(text))
 
         data = result
-        # data = json.loads(result) if isinstance(result,str) else result
-        # # 字段入库
-        # write_doctor_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
-        #                    drop_first=True, back_first=True)
+        data = json.loads(result) if isinstance(result,str) else result
+        # 字段入库
+        write_doctor_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
+                           drop_first=True, back_first=True)
     except Exception as e:
         slogger.error(f"html_handler error:{e}")
         traceback.print_exc()

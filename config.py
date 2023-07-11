@@ -14,14 +14,14 @@ OPENAI_API_HOST = os.environ.get("OPENAI_API_BASE")
 OPENAI_API_HOST_BAK = os.environ.get("OPENAI_API_BASE_BACKUP")
 OPENAI_API_HOST_BAK2 = os.environ.get("OPENAI_API_BASE_BACKUP2")
 OPENAI_GPT_MODEL = "gpt-3.5-turbo"
-OPENAI_API_HOST_USE = OPENAI_API_HOST_BAK
+OPENAI_API_HOST_USE = OPENAI_API_HOST#OPENAI_API_HOST_BAK
 
 # NB分类器配置
 POS_FILE = r"data/nb_pos.txt"
 NEG_FILE = r"data/nb_neg.txt"
 MODEL_FILE = r"data/nb_clf.pkl"
 VECTORIZER_FILE = r"data/nb_vec.pkl"
-DIRTY_FIELDS = ['work_experience','education','articles','introduce','publications','academic','expertise']
+DIRTY_FIELDS = ['work_experience','education','articles','introduce','publications','academic','expertise','clinical_trials']
 
 # 表格解析
 EXTRACT_MARKDOWN_TABLE = {'en':False,'jp':True,'zh-tw':True}

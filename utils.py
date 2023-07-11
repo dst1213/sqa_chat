@@ -1004,9 +1004,9 @@ def is_dirty(key,text):
             slogger.info(f"is_dirty dirty_words:{w.lower()}")
             return True
         # 注意：要选定字段，不要所有字段都用nb，短字段没有训练数据，非常容易误判！！！
-        if key.lower() in config.DIRTY_FIELDS and not nb_predictor.predict_spam(text):
-            slogger.info(f"is_dirty predict_spam:{text}")
-            return True
+        # if key.lower() in config.DIRTY_FIELDS and not nb_predictor.predict_spam(text):
+        #     slogger.info(f"is_dirty predict_spam:{text}")
+        #     return True
         if key.lower() in must_symbols and not must_symbols[key] in text:
             slogger.info(f"is_dirty must_symbols:{key}")
             return True
