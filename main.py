@@ -14,8 +14,8 @@ import websockets
 import config
 import prompts
 from llm_tools import get_openai_data, chat_translate
-from db_models import write_doctor_table
-from handlers import get_table
+from db_models import write_table, write_all_tables
+from llm_sql_handlers import get_table
 from log_tools import slogger
 
 from dotenv import load_dotenv
@@ -46,7 +46,7 @@ def html_handler():
     url = request.form.get("url", "")
     try:
         # 爬虫
-        soup,text,raw_text = get_html(url)  # requests
+        # soup,text,raw_text = get_html(url)  # requests
         # soup,text,raw_text = get_html_by_sn(url)  # selenium, list-cooper
         # soup, text, raw_text = get_html_by_pw(url)  # playwright
         # soup, text, raw_text = get_html_by_file("test/data/SHIH-JUNG-CHENG_html.txt")  # 本地文件
@@ -55,23 +55,30 @@ def html_handler():
         # result = get_openai_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
         repeat = 0
         # TODO 等解决了16k的“继续"指令后再改txt为json，txt的多个分块问题多，先截断了
-        result = web_text_extractor(text[:45000], raw_text=raw_text,limit=50000, repeat=repeat, out_type='txt', model_type='gpt-3.5-turbo-16k', url=url)  # default repeat=0  # 15000比较好
-        slogger.info(f"repeat:{repeat},result:{result}")
-        name_suffix = random.randint(1, 10000)
-        temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}_{name_suffix}.txt")
-        slogger.info(f"temp_file_path:{temp_file_path}")
-        # 即使抽取失败，不影响索引构建，但是可能影响名片字段的入库 TODO
-        with open(temp_file_path, 'w', encoding='utf8') as temp_file:
-            if result:
-                temp_file.write(str(result))
-            else:
-                temp_file.write(str(text))
-
-        data = result
-        data = json.loads(result) if isinstance(result,str) else result
+        # result = web_text_extractor(text[:45000], raw_text=raw_text,limit=50000, repeat=repeat, out_type='txt', model_type='gpt-3.5-turbo-16k', url=url)  # default repeat=0  # 15000比较好
+        # slogger.info(f"repeat:{repeat},result:{result}")
+        # name_suffix = random.randint(1, 10000)
+        # temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}_{name_suffix}.txt")
+        # slogger.info(f"temp_file_path:{temp_file_path}")
+        # # 即使抽取失败，不影响索引构建，但是可能影响名片字段的入库 TODO
+        # with open(temp_file_path, 'w', encoding='utf8') as temp_file:
+        #     if result:
+        #         temp_file.write(str(result))
+        #     else:
+        #         temp_file.write(str(text))
+        #
+        # data = result
+        # data = json.loads(result) if isinstance(result,str) else result
+        data = ""
         # 字段入库
-        write_doctor_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
-                           drop_first=True, back_first=True)
+        write_all_tables(user,drop_first=False,back_first=False)
+        # write_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
+        #             drop_first=True, back_first=True)
+        # write_table(table_info=data, table_name='clinical_trial', db_name=user, class_name='ClinicalTrial', fields_info=None,
+        #             drop_first=True, back_first=True)
+        #
+        # write_table(table_info=data, table_name='pubmed', db_name=user, class_name='PubMed', fields_info=None,
+        #             drop_first=True, back_first=True)
     except Exception as e:
         slogger.error(f"html_handler error:{e}")
         traceback.print_exc()
@@ -102,8 +109,10 @@ def text_handler():
 
     data = json.loads(result)
     # 字段入库
-    write_doctor_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
-                       drop_first=True, back_first=True)
+    write_table(table_info=data, table_name='doctor', db_name=user, class_name='Doctor', fields_info=None,
+                drop_first=True, back_first=True)
+
+
 
     return {"status": "success", "data": data}
 

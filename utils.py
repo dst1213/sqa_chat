@@ -1,6 +1,7 @@
 # coding:utf-8
 import random
 import tempfile
+from pprint import pprint
 
 import pandas as pd
 from io import StringIO
@@ -30,7 +31,6 @@ BAOSTOCK_TIMEOUT = 3  # baostock超时，秒
 BAOSTOCK_RETRY = 3  # baostock重试次数,3
 BAOSTOCK_WAIT_INTERVAL = 3000  # ms毫秒，wait_fixed 设置失败重试的间隔时间,2000
 
-
 # init
 
 # 预测
@@ -41,6 +41,7 @@ nb_predictor = NBPredictor(model_file, vectorizer_file)
 text = "Today's research for tomorrow's cure"
 prediction = nb_predictor.predict_spam(text)
 print(prediction)
+
 
 class BaostockUtils:
 
@@ -208,7 +209,7 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
             _uses.extend(_uses)
         return _uses
 
-    def _extract_by_site_pattern(text,url,keyword):
+    def _extract_by_site_pattern(text, url, keyword):
         _pub_res = []
         patterns = config.SITE_PATTERN_MAPPING
         keys = patterns.keys()
@@ -233,7 +234,6 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
                     slogger.error(f"_extract_by_site_pattern {paper}, error:{e}")
         return _pub_res
 
-
     # soup
     soup = get_soup_from_text(tag_text)
     raw_soup = get_soup_from_text(raw_text)  # 因为tag_text清洗后，<div>里边的class id都没有了，无法判断参考信息
@@ -242,7 +242,7 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
 
     # phone TODO 不同国家的固化、手机格式不统一，要区分
     phones = []
-    _phones = get_phone_from_text(tag_text,lang)
+    _phones = get_phone_from_text(tag_text, lang)
     if _phones:
         phones.extend(_phones)
 
@@ -268,7 +268,6 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
     _pmcids = extract_pmc_ids(text)
     if _pmcids:
         pmcids.extend(_pmcids)
-
 
     # Publications
     # publications = []
@@ -333,18 +332,19 @@ def rule_text_extractor(text, tag_text, raw_text, url=None, lang='en'):
     educations = _extract_by_key_tag(soup, 'education', lang)
 
     # Service language
-    service_lang = [config.SERVICE_LANGUAGES.get(lang,'not provided')]
+    service_lang = [config.SERVICE_LANGUAGES.get(lang, 'not provided')]
 
     # 汇总
     data = {"phone": phones, "email": emails, "pmids": pmids, "pmcids": pmcids, "publications": publications,
             "clinical_trials": ct, "achievement": achievements, "expertise": expertises, "academic": academics,
-            "work_experience": work_experiences, "education": educations,"service_language":service_lang, "avatar":avatars}
+            "work_experience": work_experiences, "education": educations, "service_language": service_lang,
+            "avatar": avatars}
     slogger.info(f"rule_text_extractor:{data}")
     return data
 
 
 def lang_detect(text):
-    lang =  langid.classify(text)[0]
+    lang = langid.classify(text)[0]
     if lang == 'zh':
         if is_zh_tw(text):
             lang = 'zh-tw'
@@ -379,7 +379,7 @@ def merge_strategy(llm_results, md_results, rule_results, out_type='json', force
     return merged
 
 
-def verify_truth(result_dict,text,add_notice=True):
+def verify_truth(result_dict, text, add_notice=True):
     """
     校验：信息丢失、信息冗余（多）、信息不对、信息错位【A字段填到B字段，可能是A,B字段相似度较高导致】
     步骤：GPT抽取信息（循环5次）-> Omission缺失查找 -> Evidence证据补全（就是抽取的实体附上原文） -> Prune剪枝去掉错误不准确的信息
@@ -395,7 +395,7 @@ def verify_truth(result_dict,text,add_notice=True):
     Evidence也不好弄
 
     """
-    if not isinstance(result_dict,dict):
+    if not isinstance(result_dict, dict):
         return
     fields = config.FIELD_NEED_CHECK
     res = result_dict
@@ -403,11 +403,11 @@ def verify_truth(result_dict,text,add_notice=True):
     try:
         new_dict = {k: result_dict[k] for k in fields if k in result_dict and result_dict[k]}  # 空字段不检查
         slogger.info(f"verify_truth input keys:{list(new_dict.keys())}")
-        wrong_keys = llm_prune(query=text,bulleted_str=str(new_dict))
+        wrong_keys = llm_prune(query=text, bulleted_str=str(new_dict))
         slogger.info(f"verify_truth wrong keys:{wrong_keys}")
         if add_notice:
             for k in wrong_keys:
-                res[k] = res[k] + notice_suffix if isinstance(res[k],str) else str(res[k]) + notice_suffix
+                res[k] = res[k] + notice_suffix if isinstance(res[k], str) else str(res[k]) + notice_suffix
     except Exception as e:
         slogger.error(f"verify_truth error:{e}")
     return res
@@ -427,7 +427,7 @@ def web_text_extractor(text, raw_text=None, limit=4000, repeat=0, out_type='json
     # step2: Markdown模板匹配
     # keywords = ["bio", "biology", "publications", "clinical trials", "abstract"]
     keywords = config.MARKDOWN_KEYWORDS
-    md_results = markdown_text_extractor(tag_text, url, keywords=keywords,lang=lang)
+    md_results = markdown_text_extractor(tag_text, url, keywords=keywords, lang=lang)
     # step3: LLM抽取（兜底），不同的网页可能需要不同的Prompt template模板，甚至需要通用模板+定制模板两轮
     llm_results = llm_text_extractor(text, limit, repeat, out_type, to_str, model_type, url,
                                      prompt=prompts.FIELD_EXTRACTOR_TEMPLATE_L3)
@@ -516,10 +516,10 @@ def get_email_from_text(text):
     return emails
 
 
-def get_phone_from_text(text,lang=None):
+def get_phone_from_text(text, lang=None):
     # 提取电话
     # pattern = r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'
-    pattern = config.PHONE_LANG_MAPPING.get(lang,None)
+    pattern = config.PHONE_LANG_MAPPING.get(lang, None)
     if not pattern:
         return []
     matches = re.findall(pattern, text)
@@ -715,7 +715,7 @@ def md2txt(md):
     return txt
 
 
-def doc_obj_to_text(doc_obj,use_table=True):
+def doc_obj_to_text(doc_obj, use_table=True):
     txt = ''
     try:
         txt = md2txt(doc_obj["content"]) if isinstance(doc_obj, dict) else md2txt(doc_obj.page_content)
@@ -724,9 +724,9 @@ def doc_obj_to_text(doc_obj,use_table=True):
             table_str = markdown_table_extractor(txt)
             if table_str:
                 slogger.info(f"doc_obj_to_text table:{table_str}, meta:{doc_obj.metadata}")
-                res = table_str #markdown_table_converter(table_str) # shin-jung-cheng会丢失数据
+                res = table_str  # markdown_table_converter(table_str) # shin-jung-cheng会丢失数据
                 slogger.info(f"doc_obj_to_text table conv:{res}")
-                if res and isinstance(res,list):
+                if res and isinstance(res, list):
                     txt = ','.join(res)
     except Exception as e:
         slogger.error(f"doc_obj_to_text error:{e}")
@@ -784,14 +784,14 @@ def html2md(html_doc):
     return res
 
 
-def markdown_text_extractor(html_doc, url, keywords,lang):
+def markdown_text_extractor(html_doc, url, keywords, lang):
     result = []
     try:
         # html_doc = html_clean(url)
         md_txt = html2md(html_doc)
-        use_table = config.EXTRACT_MARKDOWN_TABLE.get(lang,False)  # 打开的话，Markdown解析很多都有问题
+        use_table = config.EXTRACT_MARKDOWN_TABLE.get(lang, False)  # 打开的话，Markdown解析很多都有问题
         slogger.info(f"markdown_text_extractor use_table:{use_table}")
-        res = markdown_handler(md_txt, keywords,use_table=use_table)
+        res = markdown_handler(md_txt, keywords, use_table=use_table)
         result.append(res)
         slogger.info(f"markdown_text_extractor:{result}")
     except Exception as e:
@@ -810,9 +810,10 @@ def markdown_table_extractor(md_text):
     table_str = ""
     for table in tables:
         slogger.info(f"markdown_table_extractor:{table.strip()}")
-        table_str += table.strip().replace('-','').replace('|','')
+        table_str += table.strip().replace('-', '').replace('|', '')
 
     return table_str
+
 
 def markdown_table_converter(markdown_table):
     # 使用read_csv函数将Markdown表格转换为DataFrame
@@ -829,7 +830,8 @@ def markdown_table_converter(markdown_table):
     slogger.info(f"markdown_table_converter:{df}")
     return res
 
-def markdown_handler(md_txt, keywords,use_table=False):
+
+def markdown_handler(md_txt, keywords, use_table=False):
     """
     Document(page_content='Dr. Aggarwal is an internationally recognized structural biologist',
     metadata={'Header 1': 'Business Office', 'Header 2': '__Business Office 1', 'Header 3': 'Biography'})
@@ -846,7 +848,7 @@ def markdown_handler(md_txt, keywords,use_table=False):
         return
     for doc_obj in ms_doc_objs:
         try:
-            content = doc_obj_to_text(doc_obj,use_table=use_table)
+            content = doc_obj_to_text(doc_obj, use_table=use_table)
             meta = doc_obj["metadata"] if isinstance(doc_obj,
                                                      dict) else doc_obj.metadata  # 218版的Langchain是Document对象page_content
             for keyword in keywords:
@@ -944,14 +946,16 @@ def get_html_by_pw(url):
         slogger.error(f"get_html_by_pw,url:{url}, error:{e}")
     return soup, text, raw_text
 
-def extract_img(url,soup,clean=True):
+
+def extract_img(url, soup, clean=True):
     # url = "https://ziekenhuisamstelland.nl/nl/onze-specialisten/76.html"
     # response = requests.get(url)
     # soup = BeautifulSoup(response.text, 'html.parser')
     img_urls = []
-    excludes = ['logo','banner','gif','qrcode']
-    includes = ['personal','title']
-    def _is_dirty(img_url,excludes):
+    excludes = ['logo', 'banner', 'gif', 'qrcode']
+    includes = ['personal', 'title']
+
+    def _is_dirty(img_url, excludes):
         flag = False  # 是否包含排除词
         for ex in excludes:
             url_end = img_url.lower().split('/')[-2:]
@@ -978,13 +982,14 @@ def extract_img(url,soup,clean=True):
             img_url = urljoin(url, src)
             slogger.info(f"extract_img:{img_url}")
             if clean:
-                if not _is_dirty(img_url,excludes):
+                if not _is_dirty(img_url, excludes):
                     img_urls.append(img_url)
             else:
                 img_urls.append(img_url)
         except Exception as e:
             slogger.error(f"extract_img url:{url}, error:{e}")
     return img_urls
+
 
 # 配合langid是zh时，判断是否是繁体
 def is_zh_tw(text):
@@ -996,7 +1001,8 @@ def is_zh_tw(text):
         slogger.info(f"不包含繁体字:{text}")
         return False
 
-def is_dirty(key,text):
+
+def is_dirty(key, text):
     dirty_words = config.REMOVE_INFO
     must_symbols = config.MUST_SYMBOLS
     for w in dirty_words:
@@ -1014,16 +1020,88 @@ def is_dirty(key,text):
 
 
 def remove_dirty(dict_obj):
-    if not isinstance(dict_obj,dict):
+    if not isinstance(dict_obj, dict):
         return
-    for k,v in dict_obj.items():
+    for k, v in dict_obj.items():
         try:
-            if is_dirty(k,v):
-                dict_obj[k]=''
+            if is_dirty(k, v):
+                dict_obj[k] = ''
                 slogger.info(f"remove_dirty:{v}")
         except Exception as e:
             slogger.error(f"remove_dirty {e}")
     return dict_obj
+
+
+def crawl_to_db():
+    with open("test/data/url_example_py.json") as f:
+        _data = f.read()
+    data = json.loads(_data)
+    doctors = [{"did": "tom_123", "name": data['name'], "english_name": data["name"], "email": data["email"],
+                "sex": "female", "title": data["title"],
+                "position": "{}".format({"institution": data["organization"], "department": data["department"],
+                                         "position": data["position"]}),
+                "contact": "{}".format(
+                    {"location": data["location"], "phone": data["phone"], "email": data["email"],
+                     "fax": data["phone"]}),
+                "biography": data["introduce"],
+                "expertise": data["expertise"],
+                "visit_time": "{}".format(
+                    {"visit_info": "not provided", "visit_location": data["location"],
+                     "visit_time": data["visit_time"]}),
+                "qualification": "{}".format(
+                    {"certification": data["qualification"], "fellowship": "not provided", "npi": "not provided"}),
+                "insurance": data["insurance"],
+                "language": data["language"]
+                }]
+    experiences = [{
+        "type": "career",
+        "info": data["work_experience"],
+        "time": ""
+    },
+        {
+            "type": "education",
+            "info": data["education"],
+            "time": ""
+        }
+    ]
+    achievements = [{
+        "type": "achievement",
+        "info": data["achievement"],
+        "time": ""
+    }]
+    publications = [{"type": "publications", "info": item, "time": ""} for item in data["publications"]]
+    researches = [{"type": "clinical_trials",
+                   "info": "Efficacy of Pegamotecan (PEG-Camptothecin) in Localized or Metastatic Cancer of the Stomach or Gastroesophageal Junction",
+                   "time": ""}]
+    pubmed = [{"pid": id, "title": "not provided"} for id in data["pmid"]]
+    clinical_trials = [{"nct_no": "NCT00080002",
+                        "brief_title": "Efficacy of Pegamotecan (PEG-Camptothecin) in Localized or Metastatic Cancer of the Stomach or Gastroesophageal Junction"}]
+
+    res = {"doctor": doctors, "personal_experience": experiences, "achievements": achievements,
+           "publications": publications, "medical_research": researches, "pubmed_detail": pubmed,
+           "clinical_trials_detail": clinical_trials}
+
+    return res
+
+
+def snake_to_camel(name):
+    """
+    python - 优雅的 Python 函数将 CamelCase 转换为 snake_case？ - IT工具网
+    https://www.coder.work/article/8982
+    :param name:
+    :return:
+    """
+    # name = 'snake_case_name'
+    name = ''.join(word.title() for word in name.split('_'))
+    return name
+
+
+def camel_to_snake(name):
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    name = re.sub('__([A-Z])', r'_\1', name)
+    name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
+    return name.lower()
+
 
 if __name__ == "__main__":
     # text = "这里是你的长文本"  # 请将此处替换为你的长文本
@@ -1032,6 +1110,8 @@ if __name__ == "__main__":
     # # get_pubmed_id_link(url="https://profiles.uchicago.edu/profiles/display/37485")
     # # get_pubmed_id_link(url="https://sbmi.uth.edu/faculty-and-staff/dean-sittig.htm")
     # get_pubmed_id_link(url="https://www.hopkinsmedicine.org/profiles/details/lisa-cooper")  # TUN
-    url = "https://www.uchicagomedicine.org/find-a-physician/physician/marina-chiara-garassino"
-    soup, text, raw_text = get_html_by_pw(url)
-    slogger.info(f"text:{text}")
+    # url = "https://www.uchicagomedicine.org/find-a-physician/physician/marina-chiara-garassino"
+    # soup, text, raw_text = get_html_by_pw(url)
+    # slogger.info(f"text:{text}")
+    res = crawl_to_db()
+    pprint(res)

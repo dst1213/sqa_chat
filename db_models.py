@@ -8,6 +8,7 @@ import logging
 from sqlalchemy import create_engine, Column, Integer, String, MetaData, Table
 from sqlalchemy.orm import sessionmaker, declarative_base
 from log_tools import slogger
+from utils import crawl_to_db,snake_to_camel
 
 
 class MedDataBase:
@@ -57,8 +58,8 @@ class MedDataBase:
         session.close()
 
 
-def write_doctor_table(table_info, table_name='doctor', db_name='test_123', class_name='Doctor', fields_info=None,
-                       drop_first=True, back_first=True):
+def write_table(table_info, table_name='doctor', db_name='test_123', class_name='Doctor', fields_info=None,
+                drop_first=True, back_first=True):
     # 使用示例
     db = MedDataBase(f'med_db/{db_name}.db')
 
@@ -71,6 +72,13 @@ def write_doctor_table(table_info, table_name='doctor', db_name='test_123', clas
     db.write_info(class_name, **table_info)
 
     db.close_database()
+
+def write_all_tables(user,drop_first=False,back_first=False):
+    data = crawl_to_db()  # fake data
+    for k,v in data.items():
+        for _v in v:
+            write_table(table_info=_v, table_name=k, db_name=user, class_name=snake_to_camel(k), fields_info=None,
+                        drop_first=drop_first, back_first=back_first)
 
 
 if __name__ == "__main__":
@@ -93,3 +101,7 @@ if __name__ == "__main__":
     db.write_info(class_name, **table_info)
 
     db.close_database()
+
+def map_table_fields(data,table):
+    if not isinstance(data,dict):
+        return

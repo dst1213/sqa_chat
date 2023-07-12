@@ -14,17 +14,18 @@ OPENAI_API_HOST = os.environ.get("OPENAI_API_BASE")
 OPENAI_API_HOST_BAK = os.environ.get("OPENAI_API_BASE_BACKUP")
 OPENAI_API_HOST_BAK2 = os.environ.get("OPENAI_API_BASE_BACKUP2")
 OPENAI_GPT_MODEL = "gpt-3.5-turbo"
-OPENAI_API_HOST_USE = OPENAI_API_HOST#OPENAI_API_HOST_BAK
+OPENAI_API_HOST_USE = OPENAI_API_HOST  # OPENAI_API_HOST_BAK
 
 # NB分类器配置
 POS_FILE = r"data/nb_pos.txt"
 NEG_FILE = r"data/nb_neg.txt"
 MODEL_FILE = r"data/nb_clf.pkl"
 VECTORIZER_FILE = r"data/nb_vec.pkl"
-DIRTY_FIELDS = ['work_experience','education','articles','introduce','publications','academic','expertise','clinical_trials']
+DIRTY_FIELDS = ['work_experience', 'education', 'articles', 'introduce', 'publications', 'academic', 'expertise',
+                'clinical_trials']
 
 # 表格解析
-EXTRACT_MARKDOWN_TABLE = {'en':False,'jp':True,'zh-tw':True}
+EXTRACT_MARKDOWN_TABLE = {'en': False, 'jp': True, 'zh-tw': True}
 
 # 抽取字段的映射
 FIELD_SYNONYM_V2 = {"name": ["姓名", "name"],
@@ -68,14 +69,15 @@ FIELD_SYNONYM_V1 = {"name": ["姓名", "name"],
                     "phone": ["电话", "contact", "phone", "mobile"],
                     "email": ["邮箱", "email", "电邮"],
                     "location": ["位置", "地址", "城市", "location", "office location"],
-                    "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce", "biology",'基本資料'],
+                    "introduce": ["个人介绍", "自我介绍", "专家介绍", "简介", "about me", "introduce", "biology",
+                                  '基本資料'],
                     "expertise": ["专长：", "擅长", "specialty", "expertise", "interests"],
                     "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
                     "qualification": ["资格证书", "qualification"],
                     "insurance": ["适用医保", "医疗保险", "医保", "insurance"],
                     "academic": ["学术兼职", "part-time", "academic"],
-                    "work_experience": ["工作经历", "work experience", "career", "short bio",'現職'],
-                    "education": ["学习经历", "学历", "education",'學歷'],
+                    "work_experience": ["工作经历", "work experience", "career", "short bio", '現職'],
+                    "education": ["学习经历", "学历", "education", '學歷'],
                     "publications": ["文献著作", "出版", "论文", "publications", "abstract", "all publications",
                                      "selected publications"],
                     "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trials"],
@@ -103,17 +105,52 @@ MARKDOWN_KEYWORDS = ['Academic Appointments', 'clinical trials', 'Administrative
                      'Abstract', 'Accepted Insurance', 'publications', 'Expertise', 'Professional Education', 'biology',
                      'abstract', 'Research Interests', 'BioBackground', 'Degrees', 'Boards', 'Locations',
                      'Honors & Awards',
-                     'Fellowships', 'Memberships','學歷','基本資料','現職']
+                     'Fellowships', 'Memberships', '學歷', '基本資料', '現職']
 
 SERVICE_LANGUAGES = {'ru': 'Russian', 'en': 'English', 'zh': 'Chinese', 'fr': 'French', 'nl': 'Dutch', 'kr': 'Korean',
-                     'es': 'Spanish','he':'Hebrew','ar':'Arabic','zh-cn':'Simplified Chinese','zh-tw':'Traditional Chinese'}
+                     'es': 'Spanish', 'he': 'Hebrew', 'ar': 'Arabic', 'zh-cn': 'Simplified Chinese',
+                     'zh-tw': 'Traditional Chinese'}
 
-FIELD_NEED_CHECK = ['name','phone','education','organization','department','position','title','email','location']
+FIELD_NEED_CHECK = ['name', 'phone', 'education', 'organization', 'department', 'position', 'title', 'email',
+                    'location']
 
-PHONE_LANG_MAPPING = {'en':r'\b\d{3}-\d{3}-\d{4}\b'}#{'en': r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'}
+PHONE_LANG_MAPPING = {'en': r'\b\d{3}-\d{3}-\d{4}\b'}  # {'en': r'\(?(\d{3})\)?[ -.]?(\d{3})[ -.]?(\d{4})'}
 
-REMOVE_INFO = ['版權','copyright','瀏覽統計']
+REMOVE_INFO = ['版權', 'copyright', '瀏覽統計']
 
-SITE_PATTERN_MAPPING = {'sysucc':{'publications':r'\d+\.[\s\S]*?(?=\d+\.|$)|\[\d+\][\s\S]*?(?=\[\d+\]|$)|\d+．[\s\S]*?(?=\d+．|$)'}}
+SITE_PATTERN_MAPPING = {
+    'sysucc': {'publications': r'\d+\.[\s\S]*?(?=\d+\.|$)|\[\d+\][\s\S]*?(?=\[\d+\]|$)|\d+．[\s\S]*?(?=\d+．|$)'}}
 
-MUST_SYMBOLS = {'email':'@'}
+MUST_SYMBOLS = {'email': '@'}
+
+DB_TABLES = {
+    "doctor": ["name", "english_name", "email", "sex", "title", "position", "contact", "biography", "expertise",
+               "visit_time", "qualification", "insurance", "language"],
+    "clinical_trials_detail": ["nct_no", "title", ""],
+    "pubmed_detail": ["pid", "title", "authors", "cit", "type"],
+    "cde_detail": ["id", "title", "investigator", "project_id"],
+    "medical_research": ["type", "info", "time"],
+    "publications": ["type", "info", "time"],
+    "personal_experience": ["type", "info", "start_time", "end_time"],
+    "achievements": ["type", "info", "time"],
+    "miscellaneous_data": ["id", "avatar_image", "avatar_link"]
+}
+CRAWL_FIELDS_TABLES_MAPPING = {
+    "name":{"table":"doctor","field":"name"},
+    "organization":{"table":"doctor","field":"position","sub_field":"institution","sub_type":list},
+    "department":{"table":"doctor","field":"position","sub_field":"department","sub_type":list},
+    "position":{"table":"doctor","field":"position","sub_field":"position","sub_type":list}, # 非list时用整个position字段值
+    "title":{"table":"doctor","field":"title"},
+    "phone":{"table":"doctor","field":"contact","sub_field":"phone","sub_type":list},
+    "email":{"table":"doctor","field":"email"},
+    "location":{"table":"doctor","field":"contact","sub_field":"location","sub_type":list},
+    "introduce":{"table":"doctor","field":"biography"},
+    "expertise":{"table":"doctor","field":"expertise"},
+    "visit_time":{"table":"doctor","field":"visit_time","sub_field":"visit_time","sub_type":list}, # 非list时用整个position字段值
+    "qualification":{"table":"doctor","field":"name","sub_field":"certification","sub_type":list}, # 非list时用整个position字段值
+    "insurance":{"table":"doctor","field":"insurance"},
+    "academic":{"table":"personal_experience","field":"type","value":"part_time","sub_field":"info","sub_type":str},
+    "work_experience":{"table":"personal_experience","field":"type","value":"work_experience","sub_field":"info","sub_type":str},
+    "education":{"table":"personal_experience","field":"type","value":"education","sub_field":"info","sub_type":str},
+    "publications":{"table":"publications","field":""}
+}

@@ -39,10 +39,48 @@ FIELD_EXTRACTOR_TEMPLATE_L4 = """
     Return only the structured data and nothing else:\n
     query:{query_str}
 """
+INTENT_TO_TABLE_PROMPTS_V2 = """
+    根据以下7张表的表结构字段，判断这个问句（query）需要用到哪张表。
+    问句:{query_str}
+    
+    [TableName:doctor]
+    name,english_name,email,sex,title,position,contact,biography,expertise,visit_time,qualification,insurance,language
+    其中contact,position,visit_time,qualification的值是json，具体如下：
+    contact包含子字段：location,phone,email,fax
+    position包含子字段：insitution,department,position
+    visit_time包含子字段：visit_info,visit_location,visit_time
+    qualification包含子字段：certification,fellowship,npi
+
+    [TableName:achievements]
+    type,info,time
+    其中type的值包括：honor,achievement,awards，而info是具体内容
+
+    [TableName:personal_experience]
+    type,info,start_time,end_time
+    其中type的值包括：career,education,part_time，而career和work experience是同义词，part_time是学术兼职的意思
+
+    [TableName:clinical_trials_detail]
+    nct_no,brief_title
+
+    [TableName:pubmed_detail]
+    pid,title,authors,cit,type
+    其中type的值包括：pmid,pmcid，是pubmed文章的编号，共2种，而cit是引用信息
+
+    [TableName:publications]
+    type,info,time
+    其中type的值包括：publications,pubmed,articles，而pubmed是一类文献，publications是文献和书籍的统称，articles是论文
+
+    [TableName:medical_research]
+    type,info,time
+    其中type的值包括clinical_trials,research_interest,research_project，clinical_trials或者clinical trial是临床研究
+
+    Return only the table name and nothing else
+    """
+
 INTENT_TO_TABLE_PROMPTS = """
     根据以下三张表的表结构字段，判断这个问句（query）需要用到哪张表。
     问句:{query_str}
-    
+
     [TableName:pubmed]
     name,email,affiliation,publication_status,article_id,article_references,article_title,journal_name,issn_type,issn_code,revision_date,publish_date,pubmed_id,article_abstract
 
