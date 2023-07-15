@@ -1,5 +1,7 @@
 from langchain import PromptTemplate
 
+import config
+
 FIELD_EXTRACTOR_TEMPLATE = """
     Notice: If doctor or hospital not in the context, skip this one 假如你是数据工程师，请把如下个人信息按照JSON的格式整理给我：（参考字段：行医，门诊时间，综合评价，资质认证状态，基本信息，简介，姓名，医院/机构，专长，职务，职称，学术兼职，地区，邮箱，手机，昕康ID/XK_ID，履历，教育经历，工作经历，研究，研究方向/临床研究，课题/基金，发表，发表文章，出版著作，专利和软著，执笔共识，成就，荣誉获奖）Return only the translation and nothing else:\n
     query:{query_str}
@@ -99,6 +101,25 @@ INTENT_TO_TABLE_PROMPTS = """
 SQL_LLM_TEMPLATE = """Given an input question, first translate to English,
     then create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
     Use the following format:
+
+    Question: "Question here"
+    SQLQuery: "SQL Query to run"
+    SQLResult: "Result of the SQLQuery"
+    Answer: "Final answer here", reply in Chinese language.
+
+    Only use the following tables:
+
+    {table_info}
+
+    Truncate SQLResult to less than 4000 tokens or length < 4000
+
+    Do not use Select * from
+
+    Question: {input}"""
+
+SQL_LLM_TEMPLATE_WITH_LIMIT = """Given an input question, first translate to English,
+    then create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
+    Use the following format:
     
     Question: "Question here"
     SQLQuery: "SQL Query to run"
@@ -174,12 +195,38 @@ SQL_LANG_TEMPLATE_NO_LIMIT = """Given an input question, first translate to Engl
 
     Question: {input}"""
 
+SQL_LANG_TEMPLATE_NO_LIMIT_SYNONYMS = """Given an input question, first translate to English,
+    then create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
+    Use the following format:
+
+    Question: "Question here"
+    SQLQuery: "SQL Query to run"
+    SQLResult: "Result of the SQLQuery"
+    Answer: "Final answer here"
+
+    reply in __lang_str__ language
+
+    Only use the following tables:
+
+    {table_info}
+
+    
+    Here are some synonyms for the keywords of the tables:
+    __synonyms_str__
+    
+
+    Do not use Select * from
+
+    Question: {input}"""
+
 SQL_PROMPT = PromptTemplate(
     input_variables=["input", "table_info", "dialect"], template=SQL_LLM_TEMPLATE
 )
 
 def get_sql_lang_prompt(lang='Chinese'):
-    sql_templ = SQL_LANG_TEMPLATE_NO_LIMIT.replace("__lang_str__",lang)
+    # sql_templ = SQL_LANG_TEMPLATE_NO_LIMIT.replace("__lang_str__",lang)
+    synonyms = str(config.FIELD_SYNONYM_V2_LITE)[1:-1]
+    sql_templ = SQL_LANG_TEMPLATE_NO_LIMIT_SYNONYMS.replace("__lang_str__",lang).replace("__synonyms_str__",synonyms)
     SQL_LANG_PROMPT = PromptTemplate(
         input_variables=["input", "table_info", "dialect"], template=sql_templ
     )

@@ -154,3 +154,24 @@ CRAWL_FIELDS_TABLES_MAPPING = {
     "education":{"table":"personal_experience","field":"type","value":"education","sub_field":"info","sub_type":str},
     "publications":{"table":"publications","field":""}
 }
+
+FIELD_SYNONYM_V2_LITE = {"name": ["姓名", "name"],
+                    "organization": ["医院机构", "诊所", "药厂", "公司", "hospital", "clinic", "Centers & Institutes"],
+                    "department": ["科室", "部门", "department", "Departments / Divisions"],
+                    "position": ["职务", "职位", "position", "Academic Appointments", "Administrative Appointments"],
+                    "title": ["职称", "title", "Titles"],
+                    "expertise": ["专长", "擅长", "specialty", "expertise", "interests", "Expertise",
+                                  "Research Interests",
+                                  "Specialties", "Areas of Expertise"],
+                    "visit_time": ["出诊时间", "出诊信息", "visit time", "visit hours"],
+                    "qualification": ["资格证书", "qualification"],
+                    "insurance": ["适用医保", "医疗保险", "医保", "insurance", "Accepted Insurance"],
+                    "academic": ["学术兼职", "part-time", "academic", "Boards", "Advisory Committees",
+                                 "Professional Organizations", "Memberships", "Professional Activities"],
+                    "work_experience": ["工作经历", "work experience", "career", "short bio"],
+                    "clinical_trial": ["临床研究", "研究", "clinical_trial", "clinical trials",
+                                       "Current Research and Scholarly Interests", "Clinical Trials", "Projects",
+                                       "Clinical Trial Keywords", "Clinical Trials & Research"],
+                    "achievement": ["荣誉成就", "honor", "achievement", "Honors & Awards", "Honors"],
+                    "service_language": ["服务语言", "service language", "language"],
+                    }
