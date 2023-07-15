@@ -1,0 +1,10 @@
+问句：
+口腔炎能参加NCT00080002吗
+SQLQuery:SELECT clinical_trials_detail.identification_module_nct_id, eligibility_module_eligibility_criteria FROM clinical_trials_detail INNER JOIN eligibility_module_eligibility_criteria ON clinical_trials_detail.id = eligibility_module_eligibility_criteria.id WHERE clinical_trials_detail.identification_module_nct_id = 'NCT00080002'Traceback (most recent call last):
+  File "D:\temp\py_venv\sqa_chat\lib\site-packages\sqlalchemy\engine\base.py", line 1968, in _exec_single_context
+    self.dialect.do_execute(
+  File "D:\temp\py_venv\sqa_chat\lib\site-packages\sqlalchemy\engine\default.py", line 920, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such table: eligibility_module_eligibility_criteria
+问题：
+表错了，chatdb又可以

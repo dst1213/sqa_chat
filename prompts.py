@@ -46,7 +46,8 @@ INTENT_TO_TABLE_PROMPTS_V2 = """
     问句:{query_str}
     
     [TableName:doctor]
-    name,english_name,email,sex,title,position,contact,biography,expertise,visit_time,qualification,insurance,language
+    doctor_id,name,english_name,email,sex,title,position,contact,biography,expertise,visit_time,qualification,insurance,language
+    注意doctor_id是医生编号
     其中contact,position,visit_time,qualification的值是json，具体如下：
     contact包含子字段：location,phone,email,fax
     position包含子字段：insitution,department,position
@@ -54,26 +55,26 @@ INTENT_TO_TABLE_PROMPTS_V2 = """
     qualification包含子字段：certification,fellowship,npi
 
     [TableName:achievements]
-    type,info,time
+    doctor_id,type,info,time
     其中type的值包括：honor,achievement,awards，而info是具体内容
 
     [TableName:personal_experience]
-    type,info,start_time,end_time
+    doctor_id,type,info,start_time,end_time
     其中type的值包括：career,education,part_time，而career和work experience是同义词，part_time是学术兼职的意思
 
     [TableName:clinical_trials_detail]
-    nct_no,brief_title
+    doctor_id,identification_module_nct_id,identification_module_org_study_id_info_id,identification_module_organization_full_name,identification_module_organization_class,identification_module_brief_title,identification_module_official_title,status_module_status_verified_date,status_module_overall_status,status_module_start_date_struct_date,status_module_study_first_submit_date,status_module_study_first_submit_qc_date,status_module_study_first_post_date_struct_date,status_module_study_first_post_date_struct_type,status_module_last_update_submit_date,status_module_last_update_post_date_struct_date,status_module_last_update_post_date_struct_type,sponsor_collaborators_module_lead_sponsor_name,sponsor_collaborators_module_lead_sponsor_class,description_module_brief_summary,conditions_module_conditions,conditions_module_keywords,design_module_study_type,design_module_phases,design_module_design_info_allocation,design_module_design_info_intervention_model,design_module_design_info_primary_purpose,design_module_design_info_masking_info_masking,arms_interventions_module_interventions,eligibility_module_eligibility_criteria,eligibility_module_healthy_volunteers,eligibility_module_sex,eligibility_module_minimum_age,eligibility_module_std_ages
 
     [TableName:pubmed_detail]
-    pid,title,authors,cit,type
+    doctor_id,pid,title,authors,cit,type
     其中type的值包括：pmid,pmcid，是pubmed文章的编号，共2种，而cit是引用信息
 
     [TableName:publications]
-    type,info,time
+    doctor_id,type,info,time
     其中type的值包括：publications,pubmed,articles，而pubmed是一类文献，publications是文献和书籍的统称，articles是论文
 
     [TableName:medical_research]
-    type,info,time
+    doctor_id,type,info,time
     其中type的值包括clinical_trials,research_interest,research_project，clinical_trials或者clinical trial是临床研究
 
     Return only the table name and nothing else
