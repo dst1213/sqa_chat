@@ -2,6 +2,7 @@
 import copy
 import random
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 from pprint import pprint
 
 import pandas as pd
@@ -1062,47 +1063,47 @@ def camel_to_snake(name):
 
 
 def craw_to_db_mapping(user,data):
-    doctors = [{"doctor_id": user, "name": data['name'], "english_name": data["name"], "email": data["email"],
-                "sex": "female", "title": data["title"],
-                "position": "{}".format({"institution": data["organization"], "department": data["department"],
-                                         "position": data["position"]}),
+    doctors = [{"doctor_id": user, "name": data.get('name', ''), "english_name": data.get("name", ''), "email": data.get("email", ''),
+                "sex": "female", "title": data.get("title", ''),
+                "position": "{}".format({"institution": data.get("organization", ''), "department": data.get("department", ''),
+                                         "position": data.get("position", '')}),
                 "contact": "{}".format(
-                    {"location": data["location"], "phone": data["phone"], "email": data["email"],
-                     "fax": data["phone"]}),
-                "biography": data["introduce"],
-                "expertise": data["expertise"],
+                    {"location": data.get("location", ''), "phone": data.get("phone", ''), "email": data.get("email", ''),
+                     "fax": data.get("phone", '')}),
+                "biography": data.get("introduce", ''),
+                "expertise": data.get("expertise", ''),
                 "visit_time": "{}".format(
-                    {"visit_info": "not provided", "visit_location": data["location"],
-                     "visit_time": data["visit_time"]}),
+                    {"visit_info": "not provided", "visit_location": data.get("location", ''),
+                     "visit_time": data.get("visit_time", '')}),
                 "qualification": "{}".format(
-                    {"certification": data["qualification"], "fellowship": "not provided", "npi": "not provided"}),
-                "insurance": data["insurance"],
-                "language": data["language"]
+                    {"certification": data.get("qualification", ''), "fellowship": "not provided", "npi": "not provided"}),
+                "insurance": data.get("insurance", ''),
+                "language": data.get("language", 'en')
                 }]
     experiences = [{
         "doctor_id": user,
         "type": "career",
-        "info": data["work_experience"],
+        "info": data.get("work_experience", ''),
         "time": ""
     },
         {
             "doctor_id": user,
             "type": "education",
-            "info": data["education"],
+            "info": data.get("education", ''),
             "time": ""
         }
     ]
     achievements = [{
         "doctor_id": user,
         "type": "achievement",
-        "info": data["achievement"],
+        "info": data.get("achievement", ''),
         "time": ""
     }]
-    publications = [{"doctor_id": user,"type": "publications", "info": item, "time": ""} for item in data["publications"]]
+    publications = [{"doctor_id": user,"type": "publications", "info": item, "time": ""} for item in data.get("publications", [])]
     researches = [{"doctor_id": user,"type": "clinical_trials",
                    "info": "Efficacy of Pegamotecan (PEG-Camptothecin) in Localized or Metastatic Cancer of the Stomach or Gastroesophageal Junction",
                    "time": ""}]
-    pubmed = [{"doctor_id": user,"pid": id, "title": "not provided"} for id in data["pmid"]]
+    pubmed = [{"doctor_id": user,"pid": id, "title": "not provided"} for id in data.get("pmid", [])]
     clinical_trials = [{"doctor_id": user,"nct_no": "NCT00080002",
                         "brief_title": "Efficacy of Pegamotecan (PEG-Camptothecin) in Localized or Metastatic Cancer of the Stomach or Gastroesophageal Junction"}]
 
@@ -1111,6 +1112,60 @@ def craw_to_db_mapping(user,data):
            "clinical_trials_detail": clinical_trials}
 
     return res
+
+
+def fasade_sqa(user,domain,lang,query):
+    def send_request(api_url, params):
+        try:
+            response = requests.post(api_url, data=params, timeout=300)
+            response.raise_for_status()  # 如果响应状态码不是 200，就抛出异常
+            json_response = response.json()
+            if 'error' in json_response['data']:  # 如果返回的结果中包含错误信息，也抛出异常
+                raise Exception(json_response['data']['error'])
+            return json_response
+        except Exception as e:
+            print(f"Failed to get response from {api_url}, Error: {e}")
+            return None
+
+    params = {
+        "user": user,
+        "domain": domain,
+        "lang": lang,
+        # "query":"Alice Shaw的所有临床研究"
+        "query": query
+        # "query": "alice shaw的邮箱"
+        # "query": "口腔炎能参加NCT00080002吗"
+    }
+
+    sqa_url = "http://localhost:5000/sqa"  # 你需要替换成实际的 URL
+    dbqa_url = "http://localhost:5001/dbqa"  # 你需要替换成实际的 URL
+
+    # response = send_request(sqa_url, params)
+    # if response is None:
+    #     response = send_request(dbqa_url, params)
+    #
+    # print(response)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future_sqa = executor.submit(send_request, sqa_url, params)
+        time.sleep(1)
+        future_dbqa = executor.submit(send_request, dbqa_url, params)
+
+    response_sqa = future_sqa.result()
+    response_dbqa = future_dbqa.result()
+
+    data = {"sqa":"","dbqa":"","preferred":""}
+    print("==============")
+    if response_sqa is not None:
+        data["sqa"] = response_sqa
+        data["preferred"] = "sqa"
+        print(response_sqa)
+    if response_dbqa is not None:
+        print("更多>>>")
+        print(response_dbqa)
+        data["dbqa"] = response_dbqa
+        if not data["preferred"]:
+            data["preferred"] = "dbqa"
+    return data
 
 if __name__ == "__main__":
     text = "这里是你的长文本"  # 请将此处替换为你的长文本

@@ -8,7 +8,7 @@ import logging
 from sqlalchemy import create_engine, Column, Integer, String, MetaData, Table
 from sqlalchemy.orm import sessionmaker, declarative_base
 from log_tools import slogger
-from utils import snake_to_camel
+from utils import snake_to_camel, craw_to_db_mapping
 from test.fake_data import crawl_to_db3
 
 
@@ -64,6 +64,8 @@ def write_table(table_info, table_name='doctor', db_name='test_123', class_name=
     # 使用示例
     db = MedDataBase(f'med_db/{db_name}.db')
 
+    slogger.info(f"table_info type:{type(table_info)}, table_info:{table_info}")
+
     if fields_info is None:
         fields_info = {k: String for k in table_info.keys()}
     slogger.info(f"db_name:{db_name}, table_name:{table_name}, fields_info:{fields_info}")
@@ -75,12 +77,19 @@ def write_table(table_info, table_name='doctor', db_name='test_123', class_name=
     db.close_database()
 
 def write_all_tables(user,data=None,drop_first=False,back_first=False):
-    # data = crawl_to_db3()  # fake data
-    for k,v in data.items():
+    # res = crawl_to_db3()  # fake data
+    res = craw_to_db_mapping(user, data)
+    for k,v in res.items():
         for _v in v:
-            write_table(table_info=_v, table_name=k, db_name=user, class_name=snake_to_camel(k), fields_info=None,
+            _new_v = convert_list_to_str_in_dict(_v)  # list转字符串，防止写入Sqlite的值是list而失败
+            write_table(table_info=_new_v, table_name=k, db_name=user, class_name=snake_to_camel(k), fields_info=None,
                         drop_first=drop_first, back_first=back_first)
 
+def convert_list_to_str_in_dict(dictionary):
+    for key in dictionary.keys():
+        if isinstance(dictionary[key], list):
+            dictionary[key] = ', '.join([str(elem) for elem in dictionary[key]])
+    return dictionary
 
 if __name__ == "__main__":
     # 使用示例
