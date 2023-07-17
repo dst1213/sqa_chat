@@ -55,7 +55,7 @@ def html_handler():
         # result = get_openai_data(text, prompt, model='gpt-3.5-turbo')  # gpt-3.5-turbo-16k
         repeat = 0
         # TODO 等解决了16k的“继续"指令后再改txt为json，txt的多个分块问题多，先截断了
-        # result = web_text_extractor(text[:45000], raw_text=raw_text,limit=50000, repeat=repeat, out_type='txt', model_type='gpt-3.5-turbo-16k', url=url)  # default repeat=0  # 15000比较好
+        # result,raw_result = web_text_extractor(text[:45000], raw_text=raw_text,limit=50000, repeat=repeat, out_type='txt', model_type='gpt-3.5-turbo-16k', url=url)  # default repeat=0  # 15000比较好
         # slogger.info(f"repeat:{repeat},result:{result}")
         # name_suffix = random.randint(1, 10000)
         # temp_file_path = os.path.join(tempfile.gettempdir(), f"{user}_{name_suffix}.txt")

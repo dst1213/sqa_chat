@@ -8,7 +8,8 @@ import logging
 from sqlalchemy import create_engine, Column, Integer, String, MetaData, Table
 from sqlalchemy.orm import sessionmaker, declarative_base
 from log_tools import slogger
-from utils import crawl_to_db, snake_to_camel, crawl_to_db2, crawl_to_db3
+from utils import snake_to_camel
+from test.fake_data import crawl_to_db3
 
 
 class MedDataBase:
@@ -73,8 +74,8 @@ def write_table(table_info, table_name='doctor', db_name='test_123', class_name=
 
     db.close_database()
 
-def write_all_tables(user,drop_first=False,back_first=False):
-    data = crawl_to_db3()  # fake data
+def write_all_tables(user,data=None,drop_first=False,back_first=False):
+    # data = crawl_to_db3()  # fake data
     for k,v in data.items():
         for _v in v:
             write_table(table_info=_v, table_name=k, db_name=user, class_name=snake_to_camel(k), fields_info=None,
