@@ -220,6 +220,31 @@ SQL_LANG_TEMPLATE_NO_LIMIT_SYNONYMS = """Given an input question, first translat
 
     Question: {input}"""
 
+SQL_AUTO_LANG_TEMPLATE_NO_LIMIT_SYNONYMS = """Given an input question, first translate to English,
+    then create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
+    Use the following format:
+
+    Question: "Question here"
+    SQLQuery: "SQL Query to run"
+    SQLResult: "Result of the SQLQuery"
+    Answer: "Final answer here"
+
+    reply in the same language as the question, such as English, 中文, 日本語, Español, Français, or Deutsch.
+
+    Only use the following tables:
+
+    {table_info}
+
+    
+    Here are some synonyms for the keywords of the tables:
+    __synonyms_str__
+    
+
+    Do not use Select * from
+    Reply in the same language as the question, such as English, 中文, 日本語, Español, Français, or Deutsch.
+
+    Question: {input}"""
+
 SQL_PROMPT = PromptTemplate(
     input_variables=["input", "table_info", "dialect"], template=SQL_LLM_TEMPLATE
 )
@@ -228,6 +253,7 @@ def get_sql_lang_prompt(lang='Chinese'):
     # sql_templ = SQL_LANG_TEMPLATE_NO_LIMIT.replace("__lang_str__",lang)
     synonyms = str(config.FIELD_SYNONYM_V2_LITE)[1:-1]
     sql_templ = SQL_LANG_TEMPLATE_NO_LIMIT_SYNONYMS.replace("__lang_str__",lang).replace("__synonyms_str__",synonyms)
+    # sql_templ = SQL_AUTO_LANG_TEMPLATE_NO_LIMIT_SYNONYMS.replace("__synonyms_str__",synonyms)
     SQL_LANG_PROMPT = PromptTemplate(
         input_variables=["input", "table_info", "dialect"], template=sql_templ
     )
